@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <termios.h>
 #include <stdio.h>
+#include "functions.h"
 
 #define BAUDRATE B38400
 #define MODEMDEVICE "/dev/ttyS1"
@@ -13,6 +14,7 @@
 #define TRUE 1
 
 volatile int STOP=FALSE;
+
 
 int main(int argc, char** argv)
 {
@@ -56,10 +58,10 @@ int main(int argc, char** argv)
 
 
 
-  /*
+  	/*
     VTIME e VMIN devem ser alterados de forma a proteger com um temporizador a
     leitura do(s) pr�ximo(s) caracter(es)
-  */
+  	*/
 
 
 
@@ -73,28 +75,19 @@ int main(int argc, char** argv)
     printf("New termios structure set\n");
 
 
+	int test = llopen(fd, 0);
+	if(test == -1){
+		printf("rip\n");
+	}
 
-    /*for (i = 0; i < 255; i++) {
-      buf[i] = 'a';
-    }*/
-
-    /*testing*/
-  //  buf[25] = '\n';
-
-if(gets(buf) == NULL) {
-  printf("Buf is Empty\n");
-  exit(-1);
-}
+/*	if(gets(buf) == NULL) {
+ 	 printf("Buf is Empty\n");
+  	exit(-1);
+	}
     buf[254]= '\0';
     res = write(fd,buf,strlen(buf));
     printf("%d bytes written\n", res);
-
-
-  /*
-    O ciclo FOR e as instru��es seguintes devem ser alterados de modo a respeitar
-    o indicado no gui�o
-  */
-
+*/
 
 
     sleep(1);
