@@ -67,34 +67,25 @@ int main(int argc, char** argv)
 
     tcflush(fd, TCIOFLUSH);
 
-    if ( tcsetattr(fd,TCSANOW,&newtio) == -1) {
-      perror("tcsetattr");
-      exit(-1);
-    }
+  if( tcsetattr(fd,TCSANOW,&newtio) == -1) {
+    perror("tcsetattr");
+    exit(-1);
+  }
 
-    printf("New termios structure set\n");
+  printf("New termios structure set\n");
 
 
 	int test = llopen(fd, 0);
 	if(test == -1){
-		printf("rip\n");
+		printf("LLOPEN FAILED OMG RKO OUT OF NOWHERE. WRITENONCANONICAL.C\n");
 	}
 
-/*	if(gets(buf) == NULL) {
- 	 printf("Buf is Empty\n");
-  	exit(-1);
-	}
-    buf[254]= '\0';
-    res = write(fd,buf,strlen(buf));
-    printf("%d bytes written\n", res);
-*/
 
-
-    sleep(1);
-    if ( tcsetattr(fd,TCSANOW,&oldtio) == -1) {
-      perror("tcsetattr");
-      exit(-1);
-    }
+  sleep(1);
+  if(tcsetattr(fd,TCSANOW,&oldtio) == -1) {
+    perror("tcsetattr");
+    exit(-1);
+  }
 
 
 

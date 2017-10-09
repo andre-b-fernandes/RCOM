@@ -70,15 +70,10 @@ int main(int argc, char** argv)
 
     printf("New termios structure set\n");
 
-
-    while (STOP==FALSE) {       /* loop for input */
-      res = read(fd,buf,255);   /* returns after 5 chars have been input */
-      buf[res]=0;               /* so we can printf... */
-      printf(":%s:%d\n", buf, res);
-      if (buf[0]=='\0') STOP=TRUE;
-    }
-
-
+    int test = llopen(fd, 1);
+  	if(test == -1){
+  		printf("LLOPEN FAILED REY MYSTERIO 619. NONCANONICAL.C\n");
+  	}
 
   /*
     O ciclo WHILE deve ser alterado de modo a respeitar o indicado no gui�o
