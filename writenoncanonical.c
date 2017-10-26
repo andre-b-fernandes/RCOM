@@ -3,7 +3,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
-#include <termios.h>
+//#include <termios.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "functions.h"
@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     newtio.c_lflag = 0;
 
     newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-    newtio.c_cc[VMIN]     = 5;   /* blocking read until 5 chars received */
+    newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 char received */
 
 
 
@@ -81,19 +81,12 @@ int main(int argc, char** argv)
 	if(test == -1){
 		printf("LLOPEN FAILED OMG RKO OUT OF NOWHERE. WRITENONCANONICAL.C\n");
 	}
-
-
   sleep(3);
-
-
   if(tcsetattr(fd,TCSANOW,&oldtio) == -1) {
     perror("tcsetattr");
     exit(-1);
   }
 
-
-
-
-    close(fd);
-    return 0;
+  close(fd);
+  return 0;
 }
