@@ -1,12 +1,11 @@
 #include "functions.h"
 
-char ControlField;
 
 int stuffTrame(char* trame, char * buffer, int length){
   printf("Stuffing Frame!!\n");
   trame[0] = FLAG;
   trame[1] = A;
-  trame[2] = ControlField;
+  trame[2] = ControlFieldWrite;
   trame[3] = trame[1]^trame[2];
   int counter = 0;
   int realocSize = 0;
@@ -48,7 +47,6 @@ int stuffTrame(char* trame, char * buffer, int length){
 
 int llwrite(int fd, char * buffer, int length){
   printf("LLWRITE()");
-  ControlField = 0x00; //ou é 0x00 ou é 0x40
   char* trame_I = (char *) malloc(FRAME_I_SIZE);
   int newSize = stuffTrame(trame_I, buffer, length);
 

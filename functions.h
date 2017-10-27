@@ -22,6 +22,12 @@
 #define DATA_PACKET_SIZE DATA_FRAGMENT_SIZE + 4
 #define FRAME_I_SIZE 2*DATA_FRAGMENT_SIZE + 4 + 6
 
+#define RR_1 0x05
+#define RR_2 0x85
+#define DISC 0X0b
+#define REJ_1 0x01
+#define REJ_2 0x81
+
 
 #define ESCAPE_BYTE 0x7d
 #define TRAME_SIZE 5
@@ -30,6 +36,9 @@
 #define C_SET 0x03
 #define C_UA 0x07
 
+
+char ControlFieldWrite = 0x00;
+char ControlFieldRead = 0x40;
 
 void alarmHandler(int sig);
 
@@ -61,10 +70,12 @@ int fillControlPacket(char * buf, char content, char length, char * value, int i
 
 int sendControlPackage(int fd, int size, char * filename, char type);
 
-int sendDataPackage(int fd, int size, char * filename);
+int sendDataPackage(int fd, char * filename);
 
 int applicationLayer(int fd, char * filename);
 
 int writeDataPackage(int fd, char * buffer);
 
 int openFile(char * filename);
+
+int stateMachineApplicationLayer(int fd, int fileSize, char * filename);
