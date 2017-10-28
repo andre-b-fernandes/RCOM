@@ -228,7 +228,7 @@ int applicationLayer(int role, int fd, char * filename){
 
         do {
           stateMachineApplicationLayer(fd, size, filename);
-        } while(!stop && count < 3);
+        } while(!stop);
 
 
         return 0;

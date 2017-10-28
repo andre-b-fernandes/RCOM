@@ -77,7 +77,7 @@ int main(int argc, char** argv)
   printf("New termios structure set\n");
 
 
-	int test = applicationLayer
+	int test = applicationLayer(0,fd,"pinguim.gif");
 	if(test == -1){
 		printf("applicationLayer FAILED OMG RKO OUT OF NOWHERE. WRITENONCANONICAL.C\n");
 	}

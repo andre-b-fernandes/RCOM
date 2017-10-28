@@ -71,9 +71,9 @@ int main(int argc, char** argv)
 
     printf("New termios structure set\n");
 
-    int test = llopen(fd, 1);
+    int test = applicationLayer(1,fd,"pinguim.gif");
   	if(test == -1){
-  		printf("LLOPEN FAILED REY MYSTERIO 619. NONCANONICAL.C\n");
+  		printf("applayer FAILED REY MYSTERIO 619. NONCANONICAL.C\n");
   	}
 
   /*
