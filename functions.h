@@ -13,7 +13,7 @@
 
 #define START_CONTROL_PACKET 0x02
 #define END_CONTROL_PACKET 0x03
-#define DATA_PACKET 0x02
+#define DATA_PACKET 0x01
 
 #define FILENAME 0x00
 #define FILESIZE 0x01

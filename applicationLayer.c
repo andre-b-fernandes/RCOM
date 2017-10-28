@@ -6,7 +6,7 @@ static int count = 0;
 static int stop = 0;
 
 static int FD;
-static int FILEDESCRIPTOR;
+static FILE* FILEDESCRIPTOR;
 
 void AppLayerAlarmHandler(int sig){
  printf("function timed out\n");
@@ -30,7 +30,7 @@ int stateMachineApplicationLayer(int fd, int fileSize, char * filename){
                 char data[DATA_FRAGMENT_SIZE];
                 int ret = llread(fd, data);
                 if(ret != -1){
-                  int r = write(FILEDESCRIPTOR, data, DATA_FRAGMENT_SIZE);
+                  int r = fwrite( data, DATA_FRAGMENT_SIZE,1,FILEDESCRIPTOR);
                   if( r == -1){
                     printf("DATA FAILED TO BE WRITTEN! APPLAYER!\n");
                   }
@@ -198,7 +198,6 @@ int sendDataPackage(int fd, char * filename){
         int filesenddescriptor = openFile(filename);
         if(filesenddescriptor == -1)
                 return -1;
-        FILEDESCRIPTOR = filesenddescriptor;
         int test = readFile(fd,filesenddescriptor);
         if(test == -1)
                 return -1;
@@ -208,19 +207,27 @@ int sendDataPackage(int fd, char * filename){
 
 int applicationLayer(int role, int fd, char * filename){
         FD = fd;
-        printf("FILENAME: %s\n", filename);
-        int size = getFileSize(filename);
-        if(size == -1)
-                return -1;
-
-        printf("FILESIZE: %d\n", size);
+        int size = 0;
         if(role == 0) //writer
         {
-                state = 0;
+          printf("WRITER!\n");
+          printf("FILENAME: %s\n", filename);
+          size = getFileSize(filename);
+          if(size == -1)
+                  return -1;
+
+          printf("FILESIZE: %d\n", size);
+          state = 0;
         }
 
         else if(role == 1) { //reader
-                state = 1;
+          printf("READER\n");
+          FILEDESCRIPTOR = fopen(filename, "w");
+          if(FILEDESCRIPTOR == NULL){
+            printf("APPLAYER ROLE 1 ERROR CREATING FILE!\n");
+            return -1;
+          }
+            state = 1;
         }
         else{ //rip
                 return -1;

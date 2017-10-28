@@ -8,12 +8,12 @@ int stuffTrame(char* trame, char * buffer, int length){
   trame[2] = 0x00;
   trame[3] = trame[1]^trame[2];
   int counter = 0;
-  int realocSize = 0;
+  int realocSize = 4;
   int startPoint = 4;
   char bcc2 = 0x00;
   while(counter < length){
     char v = buffer[counter];
-    printf("Buffer[%d]: %x ", counter, v);
+    printf("Buffer[%d]: %x \n", counter, v);
     if(v == FLAG){
       printf("EQUALS TO FLAG!");
       char subs[2] = {0x7d,0x5e};

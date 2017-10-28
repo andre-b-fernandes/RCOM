@@ -1,7 +1,11 @@
 #include "functions.h"
 
-static int state;
+static int state = 0;
 static int stop = 0;
+
+
+
+
 
 int stateMachineLinkLayer(int fd, char * buffer){
   switch (state) {
@@ -14,7 +18,7 @@ int stateMachineLinkLayer(int fd, char * buffer){
         return -1;
       }
       if(r == FLAG){
-        printf("FLAG READ");
+        printf("FLAG READ\n");
         state = 1;
       }
       else {
@@ -31,7 +35,7 @@ int stateMachineLinkLayer(int fd, char * buffer){
         return -1;
       }
       if(r == A){
-        printf("A READ");
+        printf("A READ\n");
         state = 2;
       }
       else {
@@ -48,20 +52,20 @@ int stateMachineLinkLayer(int fd, char * buffer){
         return -1;
       }
       if(r == DISC){
-        printf("DISC READ");
+        printf("DISC READ\n");
         state = 3;
       }
       else if(r == C_UA){
-        printf("UA READ!");
+        printf("UA READ!\n");
         state = 3;
       }
       else if(r == 0x00){
-        printf("ControlFieldWrite");
+        printf("READ ControlFieldWrite\n");
         //ControlFieldRead = 0x40;
         state = 3;
       }
       else if(r == 0x40){
-        printf("ControlFieldRead");
+        printf("READ ControlFieldRead\n");
       //  ControlFieldRead = 0x00;
         state = 3;
       }
@@ -80,7 +84,7 @@ int stateMachineLinkLayer(int fd, char * buffer){
     }
     char cenas = 0x00;
     if(r == (A^cenas)){
-      printf("Control Field A^ControlFieldRead\n");
+      printf("Control Field A^cenas\n");
       state = 4;
     }
     if(r == (A^C_UA)){
@@ -88,7 +92,7 @@ int stateMachineLinkLayer(int fd, char * buffer){
       state = 5;
     }
     if(r == (A^DISC)){
-      printf("Control Field A^ControlFieldRead\n");
+      printf("Control Field A^disc\n");
       state = 5;
     }
   }
@@ -97,11 +101,27 @@ int stateMachineLinkLayer(int fd, char * buffer){
   case 4:
   {
     printf("Byte destuffing\n");
+    char r;
     int counter = 0;
     int test = 0;
     int bcc2 = 0;
+    int t = read(fd, &r, 1);
+    if(t == -1){
+      printf("STATE MACHINE LINK LAYER CASE 1 READ ERROR!\n");
+      return -1;
+    }
+    if(r == START_CONTROL_PACKET){
+
+    }
+    else if(r == END_CONTROL_PACKET){
+
+    }
+    else if(r == DATA_PACKET){
+
+    }
+    
     while (test < DATA_FRAGMENT_SIZE) {
-      char r;
+      printf("Iteration!\n");
       test += read(fd, &r, 1);
       if(test == -1){
         printf("STATE MACHINE LINK LAYER CASE 4 READ ERROR!\n");
@@ -198,6 +218,7 @@ int stateMachineLinkLayer(int fd, char * buffer){
 
 
 int llread(int fd, char * buffer){
+  printf("LLREAD()\n");
   do {
     stateMachineLinkLayer(fd, buffer);
   } while(!stop);
