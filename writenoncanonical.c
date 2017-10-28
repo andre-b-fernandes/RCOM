@@ -77,9 +77,9 @@ int main(int argc, char** argv)
   printf("New termios structure set\n");
 
 
-	int test = llopen(fd, 0);
+	int test = applicationLayer
 	if(test == -1){
-		printf("LLOPEN FAILED OMG RKO OUT OF NOWHERE. WRITENONCANONICAL.C\n");
+		printf("applicationLayer FAILED OMG RKO OUT OF NOWHERE. WRITENONCANONICAL.C\n");
 	}
   sleep(3);
   if(tcsetattr(fd,TCSANOW,&oldtio) == -1) {

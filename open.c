@@ -3,10 +3,10 @@
 
 
 
-int state;
-bool stop = false;
-int count=0;
-int FD;
+static int state;
+static bool stop = false;
+static int count=0;
+static int FD;
 
 void alarmHandler(int sig){
  printf("function timed out\n");

@@ -37,8 +37,8 @@
 #define C_UA 0x07
 
 
-char ControlFieldWrite = 0x00;
-char ControlFieldRead = 0x40;
+//char ControlFieldWrite = 0x00;
+//char ControlFieldRead = 0x40;
 
 void alarmHandler(int sig);
 
@@ -72,7 +72,7 @@ int sendControlPackage(int fd, int size, char * filename, char type);
 
 int sendDataPackage(int fd, char * filename);
 
-int applicationLayer(int fd, char * filename);
+int applicationLayer(int role, int fd, char * filename);
 
 int writeDataPackage(int fd, char * buffer);
 

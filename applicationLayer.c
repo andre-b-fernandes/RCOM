@@ -1,11 +1,12 @@
 #include "functions.h"
 
-int state;
-int lastState;
-int count = 0;
-int stop = 0;
+static int state;
+static int lastState;
+static int count = 0;
+static int stop = 0;
 
-int FD;
+static int FD;
+static int FILEDESCRIPTOR;
 
 void AppLayerAlarmHandler(int sig){
  printf("function timed out\n");
@@ -26,22 +27,17 @@ int stateMachineApplicationLayer(int fd, int fileSize, char * filename){
         case 1: //Read Frame
         {
                 printf("State 1\n");
-                char r[FRAME_I_SIZE];
-                int test = read(fd, r, FRAME_I_SIZE);
-                if(test == -1) {
-                        printf("State machine app layer case 1 read failed!\n");
+                char data[DATA_FRAGMENT_SIZE];
+                int ret = llread(fd, data);
+                if(ret != -1){
+                  int r = write(FILEDESCRIPTOR, data, DATA_FRAGMENT_SIZE);
+                  if( r == -1){
+                    printf("DATA FAILED TO BE WRITTEN! APPLAYER!\n");
+                  }
                 }
-                else{
-                        printf("State machine app layer case 1 read %d bytes\n", test);
-                }
-                if(r[2] == C_UA){
-                  printf("Finished reading!\n");
-                  state = 5;
-                }
-                else{
-                  printf("continue reading!\n");
-                  llread(fd,r);
-                  state = 1;
+
+                if(ret == 0){
+                    state = 5;
                 }
 
         }
@@ -202,7 +198,7 @@ int sendDataPackage(int fd, char * filename){
         int filesenddescriptor = openFile(filename);
         if(filesenddescriptor == -1)
                 return -1;
-
+        FILEDESCRIPTOR = filesenddescriptor;
         int test = readFile(fd,filesenddescriptor);
         if(test == -1)
                 return -1;
@@ -223,11 +219,9 @@ int applicationLayer(int role, int fd, char * filename){
                 state = 0;
         }
 
-
         else if(role == 1) { //reader
                 state = 1;
         }
-
         else{ //rip
                 return -1;
         }

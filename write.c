@@ -5,7 +5,7 @@ int stuffTrame(char* trame, char * buffer, int length){
   printf("Stuffing Frame!!\n");
   trame[0] = FLAG;
   trame[1] = A;
-  trame[2] = ControlFieldWrite;
+  trame[2] = 0x00;
   trame[3] = trame[1]^trame[2];
   int counter = 0;
   int realocSize = 0;
@@ -59,7 +59,7 @@ int llwrite(int fd, char * buffer, int length){
 
   else{
     printf("LLWRITE()! TRAME WAS WRITTEN!\n");
-    alarm(3);
+    //alarm(3);
   }
   return newSize;
 }
