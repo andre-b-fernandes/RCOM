@@ -79,3 +79,5 @@ int writeDataPackage(int fd, char * buffer);
 int openFile(char * filename);
 
 int stateMachineApplicationLayer(int fd, int fileSize, char * filename);
+
+int readByte(int fd, char* r);
