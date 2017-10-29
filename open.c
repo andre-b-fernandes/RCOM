@@ -9,14 +9,14 @@ static int count=0;
 static int FD;
 
 void alarmHandler(int sig){
- printf("function timed out\n");
+ printf("Attempt number %d \n", count + 1);
  state = 5;
  count ++;
  unblockReadPortSettings(FD);
 }
 
 int send_SET(int fileDescriptor){
-	char trame[5];
+	char trame[TRAME_SIZE];
 	trame[0] = FLAG;
 	trame[1] = A;
 	trame[2] = C_SET;

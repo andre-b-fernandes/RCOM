@@ -1,105 +1,5 @@
 #include "functions.h"
 
-static int state;
-static int lastState;
-static int count = 0;
-static int stop = 0;
-
-static int FD;
-static FILE* FILEDESCRIPTOR;
-
-void AppLayerAlarmHandler(int sig){
- printf("function timed out\n");
- state = lastState;
- count ++;
- unblockReadPortSettings(FD);
-}
-//TODO Complete with resending bad trames/ Sequence numbers
-int stateMachineApplicationLayer(int fd, int fileSize, char * filename){
-        static int counterWriter = 0;
-        switch (state) {
-        case 0: //llwrite start Package control
-                printf("State 0\n");
-                sendControlPackage(fd, fileSize, filename, START_CONTROL_PACKET);
-                state = 4;
-                lastState = 0;
-                break;
-        case 1: //Read Frame
-        {
-                printf("State 1\n");
-                char data[DATA_FRAGMENT_SIZE];
-                int ret = llread(fd, data);
-                if(ret != -1){
-                  int r = fwrite( data, DATA_FRAGMENT_SIZE,1,FILEDESCRIPTOR);
-                  if( r == -1){
-                    printf("DATA FAILED TO BE WRITTEN! APPLAYER!\n");
-                  }
-                }
-
-                if(ret == 0){
-                    state = 5;
-                }
-
-        }
-        break;
-        case 2: //Data Package
-        {
-                printf("State 2\n");
-                sendDataPackage(fd,filename);
-                counterWriter += DATA_FRAGMENT_SIZE;
-                if(counterWriter >= fileSize){
-                  printf("Finished writing\n");
-                  state = 3;
-                }
-                else state = 4;
-                lastState = 2;
-        }
-        break;
-        case 3: //Leave Writer
-        {
-                printf("State 3\n");
-                send_UA(fd);
-                stop = 1;
-
-        }
-        break;
-        case 4: //Read Response
-        {
-                printf("State 4\n");
-                char r[TRAME_SIZE];
-                int test = read(fd, r, TRAME_SIZE);
-                if(test == -1) {
-                        printf("State machine app layer case 4 read failed!\n");
-                }
-                else{
-                        printf("State machine app layer case 4 read %d bytes\n", test);
-                }
-                if(r[2] == RR_1 || r[2] == RR_2){
-                  state = 2;
-                }
-                else if(r[2] == REJ_1 || r[2] == REJ_2){
-
-                  state = lastState;
-                }
-                else if(r[2] == DISC){
-                  state = 3;
-                }
-
-        }
-                break;
-        case 5:{ //Leave Reader
-                printf("State 5\n");
-                stop = 1;
-                lastState = 5;
-        }
-                break;
-        default:
-                break;
-        }
-
-        return 0;
-}
-
 int openFile(char * filename){
         int filesenddescriptor = open(filename, O_RDONLY);
         if(filesenddescriptor == -1) {
@@ -171,7 +71,8 @@ int readTrame(int fd, int size){
 
 
 
-int readFile(int fd, int filesenddescriptor){
+int readFile(int filesenddescriptor, char * dataPackage){
+        printf("Reading from File!\n");
         char data[DATA_FRAGMENT_SIZE];
         int r = read(filesenddescriptor, data, DATA_FRAGMENT_SIZE);
         if(r == -1)
@@ -182,7 +83,6 @@ int readFile(int fd, int filesenddescriptor){
         else{
                 printf("File was read!\n");
         }
-        char dataPackage[DATA_PACKET_SIZE];
         dataPackage[0] = DATA_PACKET;
         dataPackage[1] = 0x00;
         char l1 = (char) DATA_PACKET_SIZE / 256;
@@ -190,53 +90,100 @@ int readFile(int fd, int filesenddescriptor){
         dataPackage[2] = l2;
         dataPackage[3] = l1;
         memcpy(&dataPackage[4], data, DATA_FRAGMENT_SIZE);
-        int ret = llwrite(fd, dataPackage, DATA_PACKET_SIZE);
-        return ret;
+        return r;
 }
 
-int sendDataPackage(int fd, char * filename){
-        int filesenddescriptor = openFile(filename);
-        if(filesenddescriptor == -1)
-                return -1;
-        int test = readFile(fd,filesenddescriptor);
-        if(test == -1)
-                return -1;
+//TODO send DISC AND UA
+int sequenceWriter(int fd, int size, char * filename){
+  printf("Sequence writer\n");
+  int filesenddescriptor = openFile(filename);
+  if(filesenddescriptor == -1)
+  {
+    printf("Reading Data Package ERROR!\n!");
+      return -1;
+  }
+  int test = 0;
+  do {
+    test = sendControlPackage(fd, size, filename, START_CONTROL_PACKET);
+  } while(test == 0);
 
-        return test;
+  test = 0;
+  int aux = 0;
+  do {
+    char dataPackage[DATA_PACKET_SIZE];
+    test = readFile(filesenddescriptor, dataPackage);
+    if(test == -1)
+      return -1;
+    int ret = 0;
+    do {
+      ret = llwrite(fd, dataPackage, DATA_PACKET_SIZE);
+      if( ret == -1)
+        return -1;
+      aux += ret - 10;//removing byte Flags basically
+    } while(ret == 0);
+  } while(aux < size);
+
+  do {
+    test = sendControlPackage(fd, size, filename, END_CONTROL_PACKET);
+  } while(test == 0);
+
+  return 0;
+}
+//TODO DISC
+int sequenceReader(int fd, FILE * newFileDiscriptor, int fileSize){
+  printf("Sequence reader\n");
+  char* buffer = (char *) malloc(FRAME_I_SIZE);
+  int test;
+  do { //Start COntrol package
+    test = llread(fd, buffer);
+    if(test == -1)
+      return -1;
+  } while(test == 1);
+
+  test = 0;
+  do {
+    int aux = llread(fd, buffer) - 10;//- FLAGS BASICALLY
+    if(aux == -1)
+      return -1;
+    test+= aux;
+    printf("Test: %d\n", test);
+    fwrite(buffer, 1, aux, newFileDiscriptor);
+  } while(test < fileSize);
+
+  do { //End COntrol package
+    test = llread(fd, buffer);
+    if(test == -1)
+      return -1;
+  } while(test == 1);
+
+  return 0;
 }
 
 int applicationLayer(int role, int fd, char * filename){
-        FD = fd;
         int size = 0;
+        printf("FILENAME: %s\n", filename);
+        size = getFileSize(filename);
+        if(size == -1)
+                return -1;
+        printf("FILESIZE: %d\n", size);
         if(role == 0) //writer
         {
           printf("WRITER!\n");
-          printf("FILENAME: %s\n", filename);
-          size = getFileSize(filename);
-          if(size == -1)
-                  return -1;
-
-          printf("FILESIZE: %d\n", size);
-          state = 0;
+          sequenceWriter(fd, size, filename);
         }
 
         else if(role == 1) { //reader
           printf("READER\n");
-          FILEDESCRIPTOR = fopen(filename, "w");
-          if(FILEDESCRIPTOR == NULL){
-            printf("APPLAYER ROLE 1 ERROR CREATING FILE!\n");
+          FILE* newFileDiscriptor = fopen(filename, "w");
+          if(newFileDiscriptor == NULL){
+            printf("APPLAYER READER ERROR CREATING FILE!\n");
             return -1;
           }
-            state = 1;
+          sequenceReader(fd, newFileDiscriptor, size);
         }
-        else{ //rip
-                return -1;
+        else{
+            printf("ERROR ROLE HAS TO BE 0 OR 1");
+            return -1;
         }
-
-        do {
-          stateMachineApplicationLayer(fd, size, filename);
-        } while(!stop);
-
-
         return 0;
 }

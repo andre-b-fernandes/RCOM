@@ -20,7 +20,7 @@
 
 #define DATA_FRAGMENT_SIZE 1014
 #define DATA_PACKET_SIZE DATA_FRAGMENT_SIZE + 4
-#define FRAME_I_SIZE 2*DATA_FRAGMENT_SIZE + 4 + 6
+#define FRAME_I_SIZE 2*DATA_PACKET_SIZE + 6
 
 #define RR_1 0x05
 #define RR_2 0x85
@@ -35,10 +35,6 @@
 #define A 0x03
 #define C_SET 0x03
 #define C_UA 0x07
-
-
-//char ControlFieldWrite = 0x00;
-//char ControlFieldRead = 0x40;
 
 void alarmHandler(int sig);
 
@@ -78,6 +74,16 @@ int writeDataPackage(int fd, char * buffer);
 
 int openFile(char * filename);
 
-int stateMachineApplicationLayer(int fd, int fileSize, char * filename);
-
 int readByte(int fd, char* r);
+
+int readFile(int filesenddescriptor, char * dataPackage);
+
+char readDataPacket(int fd, char * buffer, int * written);
+
+int readTrame(int fd, char * buffer);
+
+int processBuffer(char * buff, char * buffer, int buffLength);
+
+int sequenceWriter(int fd, int size, char * filename);
+
+int sequenceReader(int fd, FILE * newFileDiscriptor, int fileSize);
