@@ -15,17 +15,19 @@ int readByte(int fd, char* r){
 }
 
 int processBuffer(char * buff, char * buffer, int buffLength){
+  printf("Process Buffer!\n");
   int count = 0;
   int bufferLength = 0;
   while(count < buffLength){
     char r = buff[count];
     if( r == 0x7d){
+      printf("Needs to destuff!\n");
       char r1 = buff[count + 1];
       if(r1 == 0x5e){
-        buffer[count] = FLAG;
+        buffer[bufferLength] = FLAG;
       }
       else if (r1 == 0x5d){
-        buffer[count] = ESCAPE_BYTE;
+        buffer[bufferLength] = ESCAPE_BYTE;
       }
       else{
         printf("Oh boy...This cannot happen. AND HIS NAME IS JOHN CENA: %d !\n", count);
@@ -34,9 +36,11 @@ int processBuffer(char * buff, char * buffer, int buffLength){
       count += 2;
     }
     else {
-      buffer[count] = r;
+      printf("No need to destuff!\n");
+      buffer[bufferLength] = r;
       count++;
     }
+    printf("Buffer[%d]: %x\n",bufferLength, buffer[bufferLength]);
     bufferLength++;
   }
 
@@ -70,7 +74,8 @@ int checkHeadErrors(char* buffer, int bufferLength){
   }
   int counter = 4;
   char bcc2 = 0;
-  while(counter < bufferLength -6){
+  while((counter-4) < bufferLength -6){
+    printf("bcc2 ^= Buffer[%d]: %x\n", counter, buffer[counter]);
     bcc2 ^= buffer[counter];
     counter++;
   }
@@ -85,11 +90,34 @@ int checkHeadErrors(char* buffer, int bufferLength){
   return 0;
 }
 
-int readTrame(int fd, char * buffer){
-  char * buff = (char *) malloc(FRAME_I_SIZE);
-  int test = read(fd,buff,FRAME_I_SIZE);
+int receiveMessage(int fd, char * buff){
+  printf("Receiving message!\n");
+  char r;
+  int newSize = 1;
+  int test = read(fd,&r,1);
+  printf("R: %x\n", r);
   if(test == -1){
     printf("Error LLREAD() reading trame!\n");
+    return -1;
+  }
+  buff[0] = r;
+  do {
+    int test = read(fd,&r,1);
+    if(test == -1){
+      printf("Error LLREAD() reading trame!\n");
+      return -1;
+    }
+    buff[newSize] = r;
+    newSize++;
+    printf("R: %x\n", r);
+  } while(r != FLAG);
+  return newSize;
+}
+
+int readTrame(int fd, char * buffer){
+  char * buff = (char *) malloc(FRAME_I_SIZE);
+  int test = receiveMessage(fd, buff);
+  if(test == -1){
     return -1;
   }
   printf("Read: %d bytes\n", test);
@@ -99,20 +127,29 @@ int readTrame(int fd, char * buffer){
   if(bufferLen == -1){
     return -1;
   }
-
   else{
     buffer = (char*) realloc(buffer, bufferLen);
     int cmp = checkHeadErrors(buffer,bufferLen);
     if(cmp == -1)
-      return -1;
+    {
+        return -1;
+    }
     else if(cmp == 0)
+    {
+      printf("Everything is ok no errors on head\n");
       return bufferLen;
+    }
     else
+    {
+      printf("Errors on HEAD!\n");
       return 1;
+    }
+
   }
 }
 
 int sendRR(int fd){
+  printf("Send RR!\n");
   char trame[TRAME_SIZE];
   trame[0] = FLAG;
   trame[1] = A;
@@ -136,6 +173,7 @@ int sendRR(int fd){
 }
 
 int sendREJ(int fd){
+  printf("Send rej!\n");
   char trame[TRAME_SIZE];
   trame[0] = FLAG;
   trame[1] = A;
@@ -159,6 +197,7 @@ int sendREJ(int fd){
 }
 
 int llread(int fd, char * buffer){
+  sleep(1);
   printf("LLREAD()\n");
   int test = readTrame(fd,buffer);
   if( test == -1){

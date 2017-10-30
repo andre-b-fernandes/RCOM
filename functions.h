@@ -62,7 +62,7 @@ int llread(int fd, char * buffer);
 
 int getFileSize(char * filename);
 
-int fillControlPacket(char * buf, char content, char length, char * value, int index);
+int fillControlPacket(char * buf, char content, char length,void * value, int index);
 
 int sendControlPackage(int fd, int size, char * filename, char type);
 
@@ -86,4 +86,6 @@ int processBuffer(char * buff, char * buffer, int buffLength);
 
 int sequenceWriter(int fd, int size, char * filename);
 
-int sequenceReader(int fd, FILE * newFileDiscriptor, int fileSize);
+int sequenceReader(int fd, int newFileDiscriptor);
+
+int retfileSize(char * buffer);
