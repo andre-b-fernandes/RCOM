@@ -1,17 +1,18 @@
 #include "functions.h"
 
 static char ControlByte = 0x00;
-static int count = 0;
+int counter = 0;
 static int FD;
-static int stop = 0;
+int stop = 0;
 
 void alarmHandlerWrite(int sig){
- printf("Attempt number %d \n", count);
- count ++;
+ printf("Attempt number %d \n", counter);
+ counter++;
  unblockReadPortSettings(FD);
 }
 
 int receiveMessageWrite(int fd, unsigned char * buffer){
+  printf("Receiving MESSAGE....!\n");
   char r;
   int count = 0;
   int test = read(fd,&r,1);
@@ -20,12 +21,17 @@ int receiveMessageWrite(int fd, unsigned char * buffer){
     return -1;
   }
   if( test == 0){
-    printf("this is a 0\n");
+    printf("Could not be read\n");
     defaultPortSettings(fd);
     return 1;
   }
-  printf("TEST_ %d\n", test);
+  printf("TEST: %d\n", test);
   printf("R: %x\n" ,r);
+  if(r != FLAG){
+    printf("NOT A FLAG\n");
+    return 1;
+  }
+
   buffer[count] = r;
   count++;
   do {
@@ -34,10 +40,10 @@ int receiveMessageWrite(int fd, unsigned char * buffer){
       printf("ERROR READING RESPONSE BYTE!\n");
       return -1;
     }
-    printf("R: %x\n", r);
+    printf("R2: %x\n", r);
     buffer[count]=r;
     count++;
-  } while(r != FLAG);
+  } while(r != FLAG && counter < TRAME_SIZE);
   return 0;
 }
 
@@ -47,40 +53,54 @@ int stuffTrame(char* trame, char * buffer, int length){
   trame[1] = A;
   trame[2] = ControlByte;
   trame[3] = trame[1]^trame[2];
-  int counter = 0;
+  int c = 0;
   int realocSize = 4;
   int startPoint = 4;
   char bcc2 = 0x00;
-  while(counter < length){
-    char v = buffer[counter];
-    printf("Buffer[%d]: %x \n", counter, v);
+  while(c < length){
+    char v = buffer[c];
+  //  printf("Buffer[%d]: %x \n", c, v);
     if(v == FLAG){
-      printf("EQUALS TO FLAG!");
+  //    printf("EQUALS TO FLAG!");
       char subs[2] = {0x7d,0x5e};
-      memcpy(&trame[startPoint+counter], subs, 2);
+      memcpy(&trame[startPoint+c], subs, 2);
       startPoint++;
       realocSize+=2;
     }
     else if(v == ESCAPE_BYTE){
-      printf("EQUALS TO ESCAPE BYTE!");
+//      printf("EQUALS TO ESCAPE BYTE!");
       char subs[2] = {0x7d,0x5d};
-      memcpy(&trame[startPoint+counter], subs, 2);
+      memcpy(&trame[startPoint+c], subs, 2);
       startPoint++;
       realocSize+=2;
     }
     else{
-      printf("No stuffing needed!\n");
-      trame[startPoint+counter] = v;
+    //  printf("No stuffing needed!\n");
+      trame[startPoint+c] = v;
       realocSize++;
     }
+    //printf("Trame[%d+%d]: %x\n", startPoint, c, trame[startPoint+c]);
     bcc2 ^= v;
-    counter++;
+    c++;
   }
-  printf("BCC2: %x\n", bcc2);
-  int newSize = realocSize + 2;
-  printf("New Trame Size: %d\n", newSize);
+  //printf("BCC2: %x\n", bcc2);
+  if(bcc2 == FLAG){
+    char subs[2] = {0x7d,0x5e};
+    memcpy(&trame[startPoint+c], subs, 2);
+    realocSize+=2;
+  }
+  else if(bcc2 == ESCAPE_BYTE){
+    char subs[2] = {0x7d,0x5d};
+    memcpy(&trame[startPoint+c], subs, 2);
+    realocSize+=2;
+  }
+  else {
+    trame[startPoint + c] = bcc2;
+    realocSize++;
+  }
+  int newSize = realocSize + 1;
+//  printf("New Trame Size: %d\n", newSize);
   trame = (char*) realloc(trame, newSize);
-  trame[newSize - 2] = bcc2;
   trame[newSize - 1] = FLAG;
   return newSize;
 }
@@ -98,11 +118,11 @@ int readResponse(int fd){
   }
   if(responseTrame[0] != FLAG){
       printf("ERROR RECEIVER RESPONSE INVALID FLAG INITIAL!\n");
-      return -1;
+      return 3;
   }
   if(responseTrame[1] != A){
       printf("ERROR RECEIVER RESPONSE INVALID A!\n");
-      return -1;
+      return 3;
   }
   if(responseTrame[2] == RR_2){//Nr = 1
     printf("Receiver Ready 1\n");
@@ -128,53 +148,76 @@ int readResponse(int fd){
   }
   else{
     printf("ERROR RECEIVER RESPONSE INVALID CONTROL FIELD!\n");
-    return -1;
+    return 3;
   }
   unsigned char bcc1 = responseTrame[2] ^ responseTrame[1];
   if(bcc1 != responseTrame[3]){
     printf("ERROR RECEIVER RESPONSE INVALID BCC1!\n");
-    return -1;
+    return 3;
   }
   if(responseTrame[4] != FLAG){
       printf("ERROR RECEIVER RESPONSE INVALID FLAG FINAL!\n");
-      return -1;
+      return 3;
   }
   stop = 1;
   alarm(0);
   return ret;
 }
 
+int writeTrame(int fd, char * buffer, int length){
+  unsigned int accum = 0;
+  while(accum < length){
+  //  printf("Writing: buffer[%d]: %x\n", accum, buffer[accum]);
+    int t = write(fd, &buffer[accum], 1);
+    if( t == -1){
+      printf("LLWRITE() -> writeTrame error!\n");
+      return -1;
+    }
+    accum++;
+  }
+  return accum;
+}
+
+
 int llwrite(int fd, char * buffer, int length){
   signal(SIGALRM, alarmHandlerWrite);
   FD = fd;
   printf("LLWRITE()");
-  char* trame_I = (char *) malloc(FRAME_I_SIZE);
-  int newSize = stuffTrame(trame_I, buffer, length);
-  int test = write(fd,trame_I,newSize);
-  if(test == -1){
-    printf("Error LLWRITE()! Trame could not be written!\n");
-    return -1;
-  }
-  else{
-    printf("LLWRITE()! %d  bytes were WRITTEN.!\n", test);
-  }
+  int newSize;
   int r;
   do {
-    printf("Trying to read response %d!\n", count);
+    char* trame_I = (char *) malloc(FRAME_I_SIZE);
+    newSize = stuffTrame(trame_I, buffer, length);
+    int test = write(fd,trame_I,newSize);
+    if(test == -1){
+      return -1;
+    }
+    else{
+      printf("LLWRITE()! %d  bytes were WRITTEN.!\n", test);
+    }
+    printf("Trying to read response %d!\n", counter);
     alarm(3);
     r = readResponse(fd);
-  } while(count < 5 && !stop);
-  if( r == 0)
-  {
-    return newSize;
-  }
-  else if(count >= 5)
+    free(trame_I);
+  } while(counter < 5 && !stop);
+  if(counter >= 5)
   {
     printf("TIMEOUT!\n");
     return -1;
   }
+  if(r == 0)
+  {
+    printf("RR!\n");
+    counter = 0;
+    return newSize;
+  }
+  else if(r == 3){
+    printf("Ignore response trame\n");
+    return 0;
+  }
   else if(r == 1)
   {
+    printf("REJ!\n");
     return 0;
   }
   else return -1;

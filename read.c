@@ -1,6 +1,6 @@
 #include "functions.h"
 
-static char ControlByte = 0x40;
+static char ControlByte = 0x00;
 
 int readByte(int fd, char* r){
   int test = read(fd, r, 1);
@@ -15,13 +15,13 @@ int readByte(int fd, char* r){
 }
 
 int processBuffer(char * buff, char * buffer, int buffLength){
-  printf("Process Buffer!\n");
+//  printf("Process Buffer!\n");
   int count = 0;
   int bufferLength = 0;
   while(count < buffLength){
     char r = buff[count];
     if( r == 0x7d){
-      printf("Needs to destuff!\n");
+    // printf("Needs to destuff!\n");
       char r1 = buff[count + 1];
       if(r1 == 0x5e){
         buffer[bufferLength] = FLAG;
@@ -30,17 +30,17 @@ int processBuffer(char * buff, char * buffer, int buffLength){
         buffer[bufferLength] = ESCAPE_BYTE;
       }
       else{
-        printf("Oh boy...This cannot happen. AND HIS NAME IS JOHN CENA: %d !\n", count);
-        return -1;
+        printf("Oh boy...This cannot happen. AND HIS NAME IS JOHN CENA: %d, %x !\n", count,r1);
+        buffer[bufferLength] = 0x7d;
       }
       count += 2;
     }
     else {
-      printf("No need to destuff!\n");
+    //  printf("No need to destuff!\n");
       buffer[bufferLength] = r;
       count++;
     }
-    printf("Buffer[%d]: %x\n",bufferLength, buffer[bufferLength]);
+    //printf("Buffer[%d]: %x\n",bufferLength, buffer[bufferLength]);
     bufferLength++;
   }
 
@@ -50,17 +50,21 @@ int processBuffer(char * buff, char * buffer, int buffLength){
 int checkHeadErrors(char* buffer, int bufferLength){
   if(buffer[0] != FLAG){
     printf("FIRST FLAG HEADER MISSING! %x \n", buffer[0]);
-    return -1;
+    return 3;
   }
   if(buffer[1] != A){
     printf("Adress FIELD HEADER MISSING! %x\n",buffer[1]);
-    return -1;
+    return 3;
   }
-  if(buffer[2] == 0x00){
+  if(buffer[2] != ControlByte){
+    printf("Repeated trame!\n");
+    return 2;
+  }
+  else if(buffer[2] == 0x00 && buffer[2]==ControlByte){
     printf("Control byte %x!\n", buffer[2]);
     ControlByte = 0x40;
   }
-  else if(buffer[2] == 0x40){
+  else if(buffer[2] == 0x40 && buffer[2]==ControlByte){
     printf("Control byte %x!\n", buffer[2]);
     ControlByte = 0x00;
   }
@@ -75,7 +79,7 @@ int checkHeadErrors(char* buffer, int bufferLength){
   int counter = 4;
   char bcc2 = 0;
   while((counter-4) < bufferLength -6){
-    printf("bcc2 ^= Buffer[%d]: %x\n", counter, buffer[counter]);
+    //printf("bcc2 ^= Buffer[%d]: %x\n", counter, buffer[counter]);
     bcc2 ^= buffer[counter];
     counter++;
   }
@@ -85,7 +89,7 @@ int checkHeadErrors(char* buffer, int bufferLength){
   }
   if(buffer[bufferLength - 1] != FLAG){
     printf("Final Flag missing! %x\n", buffer[bufferLength - 2]);
-    return -1;
+    return 3;
   }
   return 0;
 }
@@ -95,21 +99,21 @@ int receiveMessageRead(int fd, char * buff){
   char r;
   int newSize = 1;
   int test = read(fd,&r,1);
-  printf("R: %x\n", r);
   if(test == -1){
     printf("Error LLREAD() reading trame!\n");
     return -1;
   }
   buff[0] = r;
   do {
+    //printf("Reading next byte from message!\n");
     int test = read(fd,&r,1);
     if(test == -1){
       printf("Error LLREAD() reading trame!\n");
       return -1;
     }
+    //printf("R: %x\n", r);
     buff[newSize] = r;
     newSize++;
-    printf("R: %x\n", r);
   } while(r != FLAG);
   return newSize;
 }
@@ -120,30 +124,22 @@ int readTrame(int fd, char * buffer){
   if(test == -1){
     return -1;
   }
-  printf("Read: %d bytes\n", test);
+//  printf("Read: %d bytes\n", test);
   buff = (char *)realloc(buff, test);
   int bufferLen = processBuffer(buff, buffer, test);
-  printf("BufferLength: %d\n", bufferLen);
+//  printf("BufferLength: %d\n", bufferLen);
   if(bufferLen == -1){
     return -1;
   }
   else{
     buffer = (char*) realloc(buffer, bufferLen);
     int cmp = checkHeadErrors(buffer,bufferLen);
-    if(cmp == -1)
-    {
-        return -1;
-    }
-    else if(cmp == 0)
+    if(cmp == 0)
     {
       printf("Everything is ok no errors on head\n");
       return bufferLen;
     }
-    else
-    {
-      printf("Errors on HEAD!\n");
-      return 1;
-    }
+    else return cmp;
 
   }
 }
@@ -197,7 +193,7 @@ int sendREJ(int fd){
 }
 
 int llread(int fd, char * buffer){
-  sleep(1);
+  //sleep(1);
   printf("LLREAD()\n");
   int test = readTrame(fd,buffer);
   if( test == -1){
@@ -209,11 +205,14 @@ int llread(int fd, char * buffer){
       return -1;
     else return 0;
   }
+  else if(test == 3){
+    return 0;
+  }
   else{
     int cmp = sendRR(fd);
     if(cmp == -1){
       return -1;
     }
-    else return test;
+    else return test;//ou length ou 2
   }
 }

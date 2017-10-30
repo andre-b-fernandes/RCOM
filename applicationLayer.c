@@ -112,58 +112,86 @@ int sequenceWriter(int fd, int size, char * filename){
     if(test == -1)
       return -1;
   } while(test == 0);
+
   test = 0;
   int aux = 0;
   do {
     char* dataPackage = (char *) malloc(DATA_PACKET_SIZE);
-    test = readFile(filesenddescriptor, dataPackage);
+    test = readFile(filesenddescriptor, dataPackage) - 4;
+    printf("Test: %d\n", test);
     if(test == -1)
       return -1;
     int ret = 0;
     do {
-      ret = llwrite(fd, dataPackage, test);
+      ret = llwrite(fd, dataPackage, test + 4);
+      printf("Ret: %d\n", ret);
       if( ret == -1)
         return -1;
-      aux += ret - 10;//removing byte Flags basically
     } while(ret == 0);
+    aux += test;//removing byte Flags basically
+    printf("Aux: %d\n", aux);
+    free(dataPackage);
   } while(aux < size);
 
   do {
     test = sendControlPackage(fd, size, filename, END_CONTROL_PACKET);
+    if(test == -1){
+      return -1;
+    }
   } while(test == 0);
 
   return 0;
 }
+
 //TODO DISC
 int sequenceReader(int fd, int newFileDiscriptor){
   printf("Sequence reader\n");
   char* buffer = (char *) malloc(FRAME_I_SIZE);
   int test;
   int fileSize;
+
   do { //Start COntrol package
     test = llread(fd, buffer);
     if(test == -1)
       return -1;
-  } while(test == 1);
+  } while(test == 0);
+  printf("Test: %d\n", test);
   fileSize = retfileSize(buffer);
-  buffer = (char *) malloc(FRAME_I_SIZE);
   test = 0;
+  int aux = 0;
   do {
-    int aux = llread(fd, buffer) - 10;//- FLAGS BASICALLY
-    printf("Aux: %d\n", aux);
-    if(aux == -1)
-      return -1;
-    test+= aux;
-    printf("Test: %d\n", test);
-    int lel = write(newFileDiscriptor, &buffer[8],aux);
+    do {
+      buffer = (char *) malloc(FRAME_I_SIZE);
+      aux = llread(fd, buffer);//- FLAGS BASICALLY
+      printf("Aux: %d\n", aux);
+      if(aux == -1)
+        return -1;
+    } while(aux == 0);
+    int lel = 0;
+    if(aux != 2)
+      lel = write(newFileDiscriptor, &buffer[8],aux-10);
+
     if(lel == -1)
       return lel;
-  } while(test < fileSize );
+    else{
+      printf("Written to file %d bytes!\n", lel);
+    }
+    test+=lel;
+    printf("Test: %d\n", test);
+    free(buffer);
+  }
+  while(test < fileSize );
+
+  printf("TOTAL: %d\n", test);
+  buffer = (char *) malloc(FRAME_I_SIZE);
+  test = 0;
+  printf("Read Last Control Package!\n");
   do { //End COntrol package
     test = llread(fd, buffer);
     if(test == -1)
       return -1;
-  } while(test == 1);
+  } while(test == 0);
+
   close(newFileDiscriptor);
   return 0;
 }
