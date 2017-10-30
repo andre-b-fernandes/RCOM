@@ -47,7 +47,7 @@ int sendControlPackage(int fd, int size, char * filename, char type){
         int index = 1;
         controlPacket_START[0] = type;
         index = fillControlPacket(controlPacket_START,FILENAME,strlen(filename),filename, index);
-        fillControlPacket(controlPacket_START, FILESIZE, sizeof(int), (unsigned int *)&size, index);
+        fillControlPacket(controlPacket_START, FILESIZE, strlen(fileSizeStr), (unsigned int *)&size, index);
 
         int ret = llwrite(fd, controlPacket_START, INT_SIZE_PACKET_CONTROL);
 
@@ -78,7 +78,7 @@ int readFile(int filesenddescriptor, char * dataPackage){
         printf("New Data Package: %d\n", newDataPackage);
         memcpy(&dataPackage[4], data, DATA_FRAGMENT_SIZE);
         dataPackage = (char *)realloc(dataPackage,newDataPackage);
-        return r;
+        return newDataPackage;
 }
 
 int retfileSize(char * buffer){
@@ -91,7 +91,7 @@ int retfileSize(char * buffer){
     c++;
     sleep(1);
   }
-  memcpy(&fileSize,&buffer[c+2],sizeof(int));
+  memcpy(&fileSize,&buffer[c+2],buffer[c+1]);
   printf("FILESIZE: %d\n", fileSize);
   return fileSize;
 }
@@ -109,6 +109,8 @@ int sequenceWriter(int fd, int size, char * filename){
   int test = 0;
   do {
     test = sendControlPackage(fd, size, filename, START_CONTROL_PACKET);
+    if(test == -1)
+      return -1;
   } while(test == 0);
   test = 0;
   int aux = 0;
@@ -119,7 +121,7 @@ int sequenceWriter(int fd, int size, char * filename){
       return -1;
     int ret = 0;
     do {
-      ret = llwrite(fd, dataPackage, DATA_PACKET_SIZE);
+      ret = llwrite(fd, dataPackage, test);
       if( ret == -1)
         return -1;
       aux += ret - 10;//removing byte Flags basically

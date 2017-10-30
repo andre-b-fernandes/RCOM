@@ -6,7 +6,7 @@ static int FD;
 static int stop = 0;
 
 void alarmHandlerWrite(int sig){
- printf("Attempt number %d \n", count + 1);
+ printf("Attempt number %d \n", count);
  count ++;
  unblockReadPortSettings(FD);
 }
@@ -19,6 +19,12 @@ int receiveMessageWrite(int fd, unsigned char * buffer){
     printf("ERROR READING RESPONSE BYTE!\n");
     return -1;
   }
+  if( test == 0){
+    printf("this is a 0\n");
+    defaultPortSettings(fd);
+    return 1;
+  }
+  printf("TEST_ %d\n", test);
   printf("R: %x\n" ,r);
   buffer[count] = r;
   count++;
@@ -87,6 +93,9 @@ int readResponse(int fd){
   if(test == -1){
     return test;
   }
+  else if(test == 1){
+    return 1;
+  }
   if(responseTrame[0] != FLAG){
       printf("ERROR RECEIVER RESPONSE INVALID FLAG INITIAL!\n");
       return -1;
@@ -148,16 +157,21 @@ int llwrite(int fd, char * buffer, int length){
   }
   else{
     printf("LLWRITE()! %d  bytes were WRITTEN.!\n", test);
-    alarm(3);
   }
   int r;
   do {
-    printf("Trying to read response!\n");
+    printf("Trying to read response %d!\n", count);
+    alarm(3);
     r = readResponse(fd);
-  } while(count < 3 && !stop);
+  } while(count < 5 && !stop);
   if( r == 0)
   {
     return newSize;
+  }
+  else if(count >= 5)
+  {
+    printf("TIMEOUT!\n");
+    return -1;
   }
   else if(r == 1)
   {
