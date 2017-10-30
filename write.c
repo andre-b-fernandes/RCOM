@@ -11,7 +11,7 @@ void alarmHandlerWrite(int sig){
  unblockReadPortSettings(FD);
 }
 
-int receiveMessage(int fd, unsigned char * buffer){
+int receiveMessageWrite(int fd, unsigned char * buffer){
   char r;
   int count = 0;
   int test = read(fd,&r,1);
@@ -83,12 +83,7 @@ int readResponse(int fd){
   printf("Reading response!\n");
   int ret;
   unsigned char responseTrame[TRAME_SIZE];
-  int test = receiveMessage(fd, responseTrame);
-  /*if( test == 0)
-  {
-    defaultPortSettings(fd);
-    return -1;
-  }*/
+  int test = receiveMessageWrite(fd, responseTrame);
   if(test == -1){
     return test;
   }

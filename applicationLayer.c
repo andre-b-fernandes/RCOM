@@ -57,7 +57,7 @@ int sendControlPackage(int fd, int size, char * filename, char type){
 
 int readFile(int filesenddescriptor, char * dataPackage){
         printf("Reading from File!\n");
-        char data[DATA_FRAGMENT_SIZE];
+        char * data = (char *) malloc(DATA_FRAGMENT_SIZE);
         int r = read(filesenddescriptor, data, DATA_FRAGMENT_SIZE);
         if(r == -1)
         {

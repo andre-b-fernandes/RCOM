@@ -89,3 +89,7 @@ int sequenceWriter(int fd, int size, char * filename);
 int sequenceReader(int fd, int newFileDiscriptor);
 
 int retfileSize(char * buffer);
+
+int receiveMessageRead(int fd, char * buff);
+
+int receiveMessageWrite(int fd, unsigned char * buffer);

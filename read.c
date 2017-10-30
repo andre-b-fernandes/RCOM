@@ -90,7 +90,7 @@ int checkHeadErrors(char* buffer, int bufferLength){
   return 0;
 }
 
-int receiveMessage(int fd, char * buff){
+int receiveMessageRead(int fd, char * buff){
   printf("Receiving message!\n");
   char r;
   int newSize = 1;
@@ -116,7 +116,7 @@ int receiveMessage(int fd, char * buff){
 
 int readTrame(int fd, char * buffer){
   char * buff = (char *) malloc(FRAME_I_SIZE);
-  int test = receiveMessage(fd, buff);
+  int test = receiveMessageRead(fd, buff);
   if(test == -1){
     return -1;
   }
