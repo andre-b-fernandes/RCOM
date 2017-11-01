@@ -16,7 +16,7 @@ void alarmHandler(int sig){
 }
 
 int send_SET(int fileDescriptor){
-	char trame[TRAME_SIZE];
+	unsigned char trame[TRAME_SIZE];
 	trame[0] = FLAG;
 	trame[1] = A;
 	trame[2] = C_SET;
@@ -34,7 +34,7 @@ int send_SET(int fileDescriptor){
 }
 
 int send_UA(int fileDescriptor){
-	char trame[5];
+	unsigned char trame[5];
 	trame[0] = FLAG;
 	trame[1] = A;
 	trame[2] = C_UA;
@@ -51,7 +51,7 @@ int send_UA(int fileDescriptor){
 	}
 }
 
-int readByteWrite(int fd, char *c){
+int readByteWrite(int fd, unsigned char *c){
 	int h = read(fd,c,1);
 	if(h == -1){
 		printf("LLOPEN(), TRANSMITTER MODE ERROR ON READ!\n");
@@ -63,7 +63,7 @@ int readByteWrite(int fd, char *c){
 	return h;
 }
 
-int readByteRead(int fd, char *c){
+int readByteRead(int fd, unsigned char *c){
 	int h = read(fd, c,1);
 	if(h== -1){
 		printf("LLOPEN(), RECEIVER MODE ERROR ON READ!\n");
@@ -108,7 +108,7 @@ int defaultPortSettings(int fd){
   return 0;
 }
 
-int stateMachineWrite(char c,int fileDescriptor){
+int stateMachineWrite(unsigned char c,int fileDescriptor){
   printf("State: %d\n", state );
 	int test;
 	switch(state){
@@ -219,7 +219,7 @@ int stateMachineWrite(char c,int fileDescriptor){
 
 
 
-int stateMachineRead(char c,int fileDescriptor){
+int stateMachineRead(unsigned char c,int fileDescriptor){
   printf("State: %d\n", state );
 	int test;
 	switch(state){
@@ -330,7 +330,7 @@ int stateMachineRead(char c,int fileDescriptor){
 int llopen(int fileDescriptor, int mode){
   FD = fileDescriptor;
 	signal(SIGALRM, alarmHandler);
-	char c = 0;
+	unsigned char c = 0;
 	if(mode == 0){ //transmitter
 		state = 5;
 		printf("WRITE\n");

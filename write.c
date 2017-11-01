@@ -1,6 +1,6 @@
 #include "functions.h"
 
-static char ControlByte = 0x00;
+static unsigned char ControlByte = 0x00;
 int counter = 0;
 static int FD;
 int stop = 0;
@@ -13,7 +13,7 @@ void alarmHandlerWrite(int sig){
 
 int receiveMessageWrite(int fd, unsigned char * buffer){
   printf("Receiving MESSAGE....!\n");
-  char r;
+  unsigned char r;
   int count = 0;
   int test = read(fd,&r,1);
   if(test == -1){
@@ -47,7 +47,7 @@ int receiveMessageWrite(int fd, unsigned char * buffer){
   return 0;
 }
 
-int stuffTrame(char* trame, char * buffer, int length){
+int stuffTrame(unsigned char* trame, unsigned char * buffer, int length){
   printf("Stuffing Frame!!\n");
   trame[0] = FLAG;
   trame[1] = A;
@@ -56,20 +56,20 @@ int stuffTrame(char* trame, char * buffer, int length){
   int c = 0;
   int realocSize = 4;
   int startPoint = 4;
-  char bcc2 = 0x00;
+  unsigned char bcc2 = 0x00;
   while(c < length){
-    char v = buffer[c];
+    unsigned char v = buffer[c];
   //  printf("Buffer[%d]: %x \n", c, v);
     if(v == FLAG){
   //    printf("EQUALS TO FLAG!");
-      char subs[2] = {0x7d,0x5e};
+      unsigned char subs[2] = {0x7d,0x5e};
       memcpy(&trame[startPoint+c], subs, 2);
       startPoint++;
       realocSize+=2;
     }
     else if(v == ESCAPE_BYTE){
 //      printf("EQUALS TO ESCAPE BYTE!");
-      char subs[2] = {0x7d,0x5d};
+      unsigned char subs[2] = {0x7d,0x5d};
       memcpy(&trame[startPoint+c], subs, 2);
       startPoint++;
       realocSize+=2;
@@ -85,12 +85,12 @@ int stuffTrame(char* trame, char * buffer, int length){
   }
   //printf("BCC2: %x\n", bcc2);
   if(bcc2 == FLAG){
-    char subs[2] = {0x7d,0x5e};
+    unsigned char subs[2] = {0x7d,0x5e};
     memcpy(&trame[startPoint+c], subs, 2);
     realocSize+=2;
   }
   else if(bcc2 == ESCAPE_BYTE){
-    char subs[2] = {0x7d,0x5d};
+    unsigned char subs[2] = {0x7d,0x5d};
     memcpy(&trame[startPoint+c], subs, 2);
     realocSize+=2;
   }
@@ -100,7 +100,7 @@ int stuffTrame(char* trame, char * buffer, int length){
   }
   int newSize = realocSize + 1;
 //  printf("New Trame Size: %d\n", newSize);
-  trame = (char*) realloc(trame, newSize);
+  trame = (unsigned char*) realloc(trame, newSize);
   trame[newSize - 1] = FLAG;
   return newSize;
 }
@@ -164,7 +164,7 @@ int readResponse(int fd){
   return ret;
 }
 
-int writeTrame(int fd, char * buffer, int length){
+int writeTrame(int fd, unsigned char * buffer, int length){
   unsigned int accum = 0;
   while(accum < length){
   //  printf("Writing: buffer[%d]: %x\n", accum, buffer[accum]);
@@ -179,14 +179,14 @@ int writeTrame(int fd, char * buffer, int length){
 }
 
 
-int llwrite(int fd, char * buffer, int length){
+int llwrite(int fd, unsigned char * buffer, int length){
   signal(SIGALRM, alarmHandlerWrite);
   FD = fd;
   printf("LLWRITE()");
   int newSize;
   int r;
   do {
-    char* trame_I = (char *) malloc(FRAME_I_SIZE);
+    unsigned char* trame_I = (unsigned char *) malloc(FRAME_I_SIZE);
     newSize = stuffTrame(trame_I, buffer, length);
     int test = write(fd,trame_I,newSize);
     if(test == -1){

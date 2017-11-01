@@ -13,7 +13,7 @@ int openFile(char * filename){
         return filesenddescriptor;
 }
 
-int getFileSize(char * filename){
+int getFileSize(char* filename){
         struct stat filinfo;
         int err = stat(filename, &filinfo);
         if(err == -1) {
@@ -26,7 +26,7 @@ int getFileSize(char * filename){
         return filinfo.st_size;
 }
 
-int fillControlPacket(char * buf, char content, char length, void * value, int index){
+int fillControlPacket(unsigned char * buf, unsigned char content, unsigned char length, void * value, int index){
         buf[index] = content;
         index++;
         buf[index] = length;
@@ -36,14 +36,14 @@ int fillControlPacket(char * buf, char content, char length, void * value, int i
         return index;
 }
 
-int sendControlPackage(int fd, int size, char * filename, char type){
+int sendControlPackage(int fd, int size, char * filename, unsigned char type){
         printf("PREPARING START CONTROL PACKAGE\n");
         char fileSizeStr[MAX_SIZE_OF_FILESIZE];
         sprintf(fileSizeStr, "%x", size);
         printf("fileSizeStr: %s\n", fileSizeStr);
-        int INT_SIZE_PACKET_CONTROL = 5*sizeof(char) + strlen(filename) + strlen(fileSizeStr);
+        int INT_SIZE_PACKET_CONTROL = 5*sizeof(unsigned char) + strlen(filename) + strlen(fileSizeStr);
         printf("Size of PACKET_CONTROL: %d\n", INT_SIZE_PACKET_CONTROL);
-        char controlPacket_START[INT_SIZE_PACKET_CONTROL];
+        unsigned char controlPacket_START[INT_SIZE_PACKET_CONTROL];
         int index = 1;
         controlPacket_START[0] = type;
         index = fillControlPacket(controlPacket_START,FILENAME,strlen(filename),filename, index);
@@ -55,9 +55,9 @@ int sendControlPackage(int fd, int size, char * filename, char type){
 
 }
 
-int readFile(int filesenddescriptor, char * dataPackage){
+int readFile(int filesenddescriptor, unsigned char * dataPackage){
         printf("Reading from File!\n");
-        char * data = (char *) malloc(DATA_FRAGMENT_SIZE);
+        unsigned char * data =  malloc(DATA_FRAGMENT_SIZE);
         int r = read(filesenddescriptor, data, DATA_FRAGMENT_SIZE);
         if(r == -1)
         {
@@ -67,26 +67,26 @@ int readFile(int filesenddescriptor, char * dataPackage){
         else{
                 printf("File was read!\n");
         }
-        data = (char *) realloc(data, r);
+        data = (unsigned char *) realloc(data, r);
         dataPackage[0] = DATA_PACKET;
         dataPackage[1] = 0x00;
-        char l1 = (char) DATA_PACKET_SIZE / 256;
-        char l2 = (char) DATA_PACKET_SIZE % 256;
+        unsigned char l1 = (unsigned char) (DATA_PACKET_SIZE / 256);
+        unsigned char l2 = (unsigned char) (DATA_PACKET_SIZE % 256);
         dataPackage[2] = l2;
         dataPackage[3] = l1;
         int newDataPackage = r+4;
         printf("New Data Package: %d\n", newDataPackage);
         memcpy(&dataPackage[4], data, DATA_FRAGMENT_SIZE);
-        dataPackage = (char *)realloc(dataPackage,newDataPackage);
+        dataPackage = (unsigned char *)realloc(dataPackage,newDataPackage);
         return newDataPackage;
 }
 
-int retfileSize(char * buffer){
+int retfileSize(unsigned char * buffer){
   int fileSize;
   int c = 5;
   while(buffer[c] != FILESIZE){
     c++;
-    char inc = buffer[c];
+    unsigned char inc = buffer[c];
     c+=inc;
     c++;
     sleep(1);
@@ -116,7 +116,7 @@ int sequenceWriter(int fd, int size, char * filename){
   test = 0;
   int aux = 0;
   do {
-    char* dataPackage = (char *) malloc(DATA_PACKET_SIZE);
+    unsigned char* dataPackage = (unsigned char *) malloc(DATA_PACKET_SIZE);
     test = readFile(filesenddescriptor, dataPackage) - 4;
     printf("Test: %d\n", test);
     if(test == -1)
@@ -146,7 +146,7 @@ int sequenceWriter(int fd, int size, char * filename){
 //TODO DISC
 int sequenceReader(int fd, int newFileDiscriptor){
   printf("Sequence reader\n");
-  char* buffer = (char *) malloc(FRAME_I_SIZE);
+  unsigned char* buffer = (unsigned char *) malloc(FRAME_I_SIZE);
   int test;
   int fileSize;
 
@@ -161,7 +161,7 @@ int sequenceReader(int fd, int newFileDiscriptor){
   int aux = 0;
   do {
     do {
-      buffer = (char *) malloc(FRAME_I_SIZE);
+      buffer = (unsigned char *) malloc(FRAME_I_SIZE);
       aux = llread(fd, buffer);//- FLAGS BASICALLY
       printf("Aux: %d\n", aux);
       if(aux == -1)
@@ -183,7 +183,7 @@ int sequenceReader(int fd, int newFileDiscriptor){
   while(test < fileSize );
 
   printf("TOTAL: %d\n", test);
-  buffer = (char *) malloc(FRAME_I_SIZE);
+  buffer = (unsigned char *) malloc(FRAME_I_SIZE);
   test = 0;
   printf("Read Last Control Package!\n");
   do { //End COntrol package

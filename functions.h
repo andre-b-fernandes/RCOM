@@ -18,7 +18,7 @@
 #define FILENAME 0x00
 #define FILESIZE 0x01
 
-#define DATA_FRAGMENT_SIZE 64
+#define DATA_FRAGMENT_SIZE 255
 #define DATA_PACKET_SIZE DATA_FRAGMENT_SIZE + 4
 #define FRAME_I_SIZE 2*DATA_PACKET_SIZE + 6
 
@@ -44,52 +44,52 @@ int send_UA(int fileDescriptor);
 
 int send_SET(int fileDescriptor);
 
-int stateMachineWrite(char c,int fileDescriptor);
+int stateMachineWrite(unsigned char c,int fileDescriptor);
 
-int stateMachineRead(char c, int fileDescriptor);
+int stateMachineRead(unsigned char c, int fileDescriptor);
 
-int readByteWrite(int fd, char *c);
+int readByteWrite(int fd, unsigned char *c);
 
-int readByteRead(int fd, char *c);
+int readByteRead(int fd, unsigned char *c);
 
 int defaultPortSettings(int fd);
 
 int unblockReadPortSettings(int fd);
 
-int llwrite(int fd, char * buffer, int length);
+int llwrite(int fd, unsigned char * buffer, int length);
 
-int llread(int fd, char * buffer);
+int llread(int fd, unsigned char * buffer);
 
 int getFileSize(char * filename);
 
-int fillControlPacket(char * buf, char content, char length,void * value, int index);
+int fillControlPacket(unsigned char * buf, unsigned char content, unsigned char length,void * value, int index);
 
-int sendControlPackage(int fd, int size, char * filename, char type);
+int sendControlPackage(int fd, int size, char * filename, unsigned char type);
 
 int sendDataPackage(int fd, char * filename);
 
 int applicationLayer(int role, int fd, char * filename);
 
-int writeDataPackage(int fd, char * buffer);
+int writeDataPackage(int fd, unsigned char * buffer);
 
 int openFile(char * filename);
 
-int readByte(int fd, char* r);
+int readByte(int fd, unsigned char* r);
 
-int readFile(int filesenddescriptor, char * dataPackage);
+int readFile(int filesenddescriptor, unsigned char * dataPackage);
 
-char readDataPacket(int fd, char * buffer, int * written);
+unsigned char readDataPacket(int fd, unsigned char * buffer, int * written);
 
-int readTrame(int fd, char * buffer);
+int readTrame(int fd, unsigned char * buffer);
 
-int processBuffer(char * buff, char * buffer, int buffLength);
+int processBuffer(unsigned char * buff, unsigned char * buffer, int buffLength);
 
 int sequenceWriter(int fd, int size, char * filename);
 
 int sequenceReader(int fd, int newFileDiscriptor);
 
-int retfileSize(char * buffer);
+int retfileSize(unsigned char * buffer);
 
-int receiveMessageRead(int fd, char * buff);
+int receiveMessageRead(int fd, unsigned char * buff);
 
 int receiveMessageWrite(int fd, unsigned char * buffer);

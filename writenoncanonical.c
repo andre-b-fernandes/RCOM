@@ -56,7 +56,7 @@ int main(int argc, char** argv)
     newtio.c_lflag = 0;
 
     newtio.c_cc[VTIME]    = 0;   /* inter-character timer unused */
-    newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 char received */
+    newtio.c_cc[VMIN]     = 1;   /* blocking read until 1 unsigned char received */
 
 
 
