@@ -12,7 +12,7 @@ void alarmHandlerWrite(int sig){
 }
 
 int receiveMessageWrite(int fd, unsigned char * buffer){
-  printf("Receiving MESSAGE....!\n");
+//  printf("Receiving MESSAGE....!\n");
   unsigned char r;
   int count = 0;
   int test = read(fd,&r,1);
@@ -25,8 +25,8 @@ int receiveMessageWrite(int fd, unsigned char * buffer){
     defaultPortSettings(fd);
     return 1;
   }
-  printf("TEST: %d\n", test);
-  printf("R: %x\n" ,r);
+  //printf("TEST: %d\n", test);
+//  printf("R: %x\n" ,r);
   if(r != FLAG){
     printf("NOT A FLAG\n");
     return 1;
@@ -40,15 +40,15 @@ int receiveMessageWrite(int fd, unsigned char * buffer){
       printf("ERROR READING RESPONSE BYTE!\n");
       return -1;
     }
-    printf("R2: %x\n", r);
+    //printf("R2: %x\n", r);
     buffer[count]=r;
     count++;
-  } while(r != FLAG && counter < TRAME_SIZE);
+  } while(r != FLAG && count < TRAME_SIZE);
   return 0;
 }
 
 int stuffTrame(unsigned char* trame, unsigned char * buffer, int length){
-  printf("Stuffing Frame!!\n");
+  //+printf("Stuffing Frame!!\n");
   trame[0] = FLAG;
   trame[1] = A;
   trame[2] = ControlByte;
@@ -83,7 +83,7 @@ int stuffTrame(unsigned char* trame, unsigned char * buffer, int length){
     bcc2 ^= v;
     c++;
   }
-  //printf("BCC2: %x\n", bcc2);
+  printf("  BCC2: %x ", bcc2);
   if(bcc2 == FLAG){
     unsigned char subs[2] = {0x7d,0x5e};
     memcpy(&trame[startPoint+c], subs, 2);
@@ -106,7 +106,7 @@ int stuffTrame(unsigned char* trame, unsigned char * buffer, int length){
 }
 
 int readResponse(int fd){
-  printf("Reading response!\n");
+//  printf("Reading response!\n");
   int ret;
   unsigned char responseTrame[TRAME_SIZE];
   int test = receiveMessageWrite(fd, responseTrame);
@@ -118,11 +118,11 @@ int readResponse(int fd){
   }
   if(responseTrame[0] != FLAG){
       printf("ERROR RECEIVER RESPONSE INVALID FLAG INITIAL!\n");
-      return 3;
+      return 1;
   }
   if(responseTrame[1] != A){
       printf("ERROR RECEIVER RESPONSE INVALID A!\n");
-      return 3;
+      return 1;
   }
   if(responseTrame[2] == RR_2){//Nr = 1
     printf("Receiver Ready 1\n");
@@ -148,16 +148,16 @@ int readResponse(int fd){
   }
   else{
     printf("ERROR RECEIVER RESPONSE INVALID CONTROL FIELD!\n");
-    return 3;
+    return 1;
   }
   unsigned char bcc1 = responseTrame[2] ^ responseTrame[1];
   if(bcc1 != responseTrame[3]){
     printf("ERROR RECEIVER RESPONSE INVALID BCC1!\n");
-    return 3;
+    return 1;
   }
   if(responseTrame[4] != FLAG){
       printf("ERROR RECEIVER RESPONSE INVALID FLAG FINAL!\n");
-      return 3;
+      return 1;
   }
   stop = 1;
   alarm(0);
@@ -182,7 +182,7 @@ int writeTrame(int fd, unsigned char * buffer, int length){
 int llwrite(int fd, unsigned char * buffer, int length){
   signal(SIGALRM, alarmHandlerWrite);
   FD = fd;
-  printf("LLWRITE()");
+  //printf("LLWRITE()");
   int newSize;
   int r;
   do {
@@ -193,9 +193,9 @@ int llwrite(int fd, unsigned char * buffer, int length){
       return -1;
     }
     else{
-      printf("LLWRITE()! %d  bytes were WRITTEN.!\n", test);
+    //  printf("LLWRITE()! %d  bytes were WRITTEN.!\n", test);
     }
-    printf("Trying to read response %d!\n", counter);
+    //printf("Trying to read response %d!\n", counter);
     alarm(3);
     r = readResponse(fd);
     free(trame_I);
@@ -207,17 +207,13 @@ int llwrite(int fd, unsigned char * buffer, int length){
   }
   if(r == 0)
   {
-    printf("RR!\n");
+    //printf("RR!\n");
     counter = 0;
     return newSize;
   }
-  else if(r == 3){
-    printf("Ignore response trame\n");
-    return 0;
-  }
   else if(r == 1)
   {
-    printf("REJ!\n");
+    //printf("REJ!\n");
     return 0;
   }
   else return -1;

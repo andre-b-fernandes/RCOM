@@ -37,12 +37,12 @@ int fillControlPacket(unsigned char * buf, unsigned char content, unsigned char 
 }
 
 int sendControlPackage(int fd, int size, char * filename, unsigned char type){
-        printf("PREPARING START CONTROL PACKAGE\n");
+        //printf("PREPARING START CONTROL PACKAGE\n");
         char fileSizeStr[MAX_SIZE_OF_FILESIZE];
         sprintf(fileSizeStr, "%x", size);
-        printf("fileSizeStr: %s\n", fileSizeStr);
+        //printf("fileSizeStr: %s\n", fileSizeStr);
         int INT_SIZE_PACKET_CONTROL = 5*sizeof(unsigned char) + strlen(filename) + strlen(fileSizeStr);
-        printf("Size of PACKET_CONTROL: %d\n", INT_SIZE_PACKET_CONTROL);
+        //printf("Size of PACKET_CONTROL: %d\n", INT_SIZE_PACKET_CONTROL);
         unsigned char controlPacket_START[INT_SIZE_PACKET_CONTROL];
         int index = 1;
         controlPacket_START[0] = type;
@@ -56,7 +56,7 @@ int sendControlPackage(int fd, int size, char * filename, unsigned char type){
 }
 
 int readFile(int filesenddescriptor, unsigned char * dataPackage){
-        printf("Reading from File!\n");
+        //printf("Reading from File!\n");
         unsigned char * data =  malloc(DATA_FRAGMENT_SIZE);
         int r = read(filesenddescriptor, data, DATA_FRAGMENT_SIZE);
         if(r == -1)
@@ -75,7 +75,7 @@ int readFile(int filesenddescriptor, unsigned char * dataPackage){
         dataPackage[2] = l2;
         dataPackage[3] = l1;
         int newDataPackage = r+4;
-        printf("New Data Package: %d\n", newDataPackage);
+        //printf("New Data Package: %d\n", newDataPackage);
         memcpy(&dataPackage[4], data, DATA_FRAGMENT_SIZE);
         dataPackage = (unsigned char *)realloc(dataPackage,newDataPackage);
         return newDataPackage;
@@ -118,18 +118,18 @@ int sequenceWriter(int fd, int size, char * filename){
   do {
     unsigned char* dataPackage = (unsigned char *) malloc(DATA_PACKET_SIZE);
     test = readFile(filesenddescriptor, dataPackage) - 4;
-    printf("Test: %d\n", test);
+    //printf("Test: %d\n", test);
     if(test == -1)
       return -1;
     int ret = 0;
     do {
       ret = llwrite(fd, dataPackage, test + 4);
-      printf("Ret: %d\n", ret);
+      //printf("Ret: %d\n", ret);
       if( ret == -1)
         return -1;
     } while(ret == 0);
     aux += test;//removing byte Flags basically
-    printf("Aux: %d\n", aux);
+  //  printf("Aux: %d\n", aux);
     free(dataPackage);
   } while(aux < size);
 
@@ -145,7 +145,7 @@ int sequenceWriter(int fd, int size, char * filename){
 
 //TODO DISC
 int sequenceReader(int fd, int newFileDiscriptor){
-  printf("Sequence reader\n");
+  //printf("Sequence reader\n");
   unsigned char* buffer = (unsigned char *) malloc(FRAME_I_SIZE);
   int test;
   int fileSize;
@@ -155,7 +155,7 @@ int sequenceReader(int fd, int newFileDiscriptor){
     if(test == -1)
       return -1;
   } while(test == 0);
-  printf("Test: %d\n", test);
+  printf("Start Control Package size: %d\n", test);
   fileSize = retfileSize(buffer);
   test = 0;
   int aux = 0;
@@ -163,21 +163,20 @@ int sequenceReader(int fd, int newFileDiscriptor){
     do {
       buffer = (unsigned char *) malloc(FRAME_I_SIZE);
       aux = llread(fd, buffer);//- FLAGS BASICALLY
-      printf("Aux: %d\n", aux);
+      printf(" Bytes read: %d\n", aux);
       if(aux == -1)
         return -1;
     } while(aux == 0);
-    int lel = 0;
-    if(aux != 2)
-      lel = write(newFileDiscriptor, &buffer[8],aux-10);
+    int writefile = 0;
+    writefile = write(newFileDiscriptor, &buffer[8],aux-10);
+    if(writefile == -1)
+      return writefile;
 
-    if(lel == -1)
-      return lel;
-    else{
-      printf("Written to file %d bytes!\n", lel);
-    }
-    test+=lel;
-    printf("Test: %d\n", test);
+    //else{
+      //printf("Written to file %d bytes!\n", lel);
+  //  }
+    test+=writefile;
+    //printf("Test: %d\n", test);
     free(buffer);
   }
   while(test < fileSize );
