@@ -42,7 +42,7 @@ int send_UA(int fileDescriptor){
 	trame[4] = FLAG;
 	int err = write(fileDescriptor, trame, TRAME_SIZE);
 	if(err == -1){
-		printf("ERROR ON WRITE(LLOPEN\n");
+		printf("ERROR UA\n");
 		return err;
 	}
 	else{

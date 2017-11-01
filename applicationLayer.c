@@ -1,5 +1,40 @@
 #include "functions.h"
 
+int send_DISC(int fileDescriptor){
+	unsigned char trame[TRAME_SIZE];
+	trame[0] = FLAG;
+	trame[1] = A;
+	trame[2] = DISC;
+	trame[3] = trame[1] ^trame[2]; //XOR OF 1 AND 2
+	trame[4] = FLAG;
+	int err = write(fileDescriptor, trame, TRAME_SIZE);
+	if(err == -1){
+		printf("ERROR ON DISC\n");
+		return err;
+	}
+	else{
+		printf("SET TRAME WRITTEN\n");
+		return 0;
+	}
+}
+
+int checkErrors(unsigned char * buffer, unsigned char cmp){
+  if(buffer[1] != A){
+    printf("Error on Address Field\n");
+    return 1;
+  }
+  if(buffer[2] != cmp){
+    printf("Error on Control Field!\n");
+    return 1;
+  }
+  unsigned char bcc = buffer[1] ^buffer[2];
+  if(bcc != buffer[3]){
+    printf("Error bcc1\n");
+    return 1;
+  }
+  return 0;
+}
+
 int openFile(char * filename){
         int filesenddescriptor = open(filename, O_RDONLY);
         if(filesenddescriptor == -1) {
@@ -140,6 +175,26 @@ int sequenceWriter(int fd, int size, char * filename){
     }
   } while(test == 0);
 
+  test = send_DISC(fd);
+  if(test == -1)
+    return -1;
+
+    test = 1;
+    do {
+      unsigned char buffer[TRAME_SIZE];
+      int r = receiveMessageWrite(fd,buffer);
+      if(r == 1)
+        continue;
+      if (r == -1)
+        return -1;
+      test = checkErrors(buffer, DISC);
+    } while(test == 1);
+
+  test = send_UA(fd);
+  if(test == -1)
+    return -1;
+
+
   return 0;
 }
 
@@ -192,6 +247,35 @@ int sequenceReader(int fd, int newFileDiscriptor){
   } while(test == 0);
 
   close(newFileDiscriptor);
+
+  test = 1;
+  do {
+    unsigned char buffer[TRAME_SIZE];
+    int r = receiveMessageWrite(fd,buffer);
+    if(r == 1)
+      continue;
+    if (r == -1)
+      return -1;
+    test = checkErrors(buffer, DISC);
+  } while(test == 1);
+
+  test = send_DISC(fd);
+  if(test == -1)
+    return -1;
+
+  test = 1;
+  do {
+    unsigned char buffer[TRAME_SIZE];
+    int r = receiveMessageWrite(fd,buffer);
+    if(r == 1)
+      continue;
+    if (r == -1)
+      return -1;
+    test = checkErrors(buffer, C_UA);
+  } while(test == 1);
+
+
+
   return 0;
 }
 
