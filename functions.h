@@ -93,3 +93,5 @@ int retfileSize(unsigned char * buffer);
 int receiveMessageRead(int fd, unsigned char * buff);
 
 int receiveMessageWrite(int fd, unsigned char * buffer);
+
+int llclose(int fd);

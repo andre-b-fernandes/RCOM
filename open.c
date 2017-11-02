@@ -338,6 +338,10 @@ int llopen(int fileDescriptor, int mode){
 			stateMachineWrite(c, fileDescriptor);
 			alarm(3);
 		} while(!stop && count < 3);
+    if(count == 3)
+    {
+      return -1;
+    }
 	}
 
 	else if(mode == 1){//receiver

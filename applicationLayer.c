@@ -13,7 +13,7 @@ int send_DISC(int fileDescriptor){
 		return err;
 	}
 	else{
-		printf("SET TRAME WRITTEN\n");
+		printf("DISC TRAME WRITTEN\n");
 		return 0;
 	}
 }
@@ -32,6 +32,7 @@ int checkErrors(unsigned char * buffer, unsigned char cmp){
     printf("Error bcc1\n");
     return 1;
   }
+	printf("%x no errors \n", cmp);
   return 0;
 }
 
@@ -273,8 +274,6 @@ int sequenceReader(int fd, int newFileDiscriptor){
       return -1;
     test = checkErrors(buffer, C_UA);
   } while(test == 1);
-
-
 
   return 0;
 }

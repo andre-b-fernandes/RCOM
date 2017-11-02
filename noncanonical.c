@@ -20,13 +20,13 @@ int main(int argc, char** argv)
     struct termios oldtio,newtio;
 
 
-    if ( (argc < 2) ||
+    if ( (argc < 3) ||
   	     ((strcmp("/dev/ttyS0", argv[1])!=0) &&
   	      (strcmp("/dev/ttyS1", argv[1])!=0) )) {
-      printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
+      printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1 pinguim.gif\n");
       exit(1);
     }
-
+    char * filename = argv[2];
 
   /*
     Open serial port device for reading and writing and not as controlling tty
@@ -71,9 +71,13 @@ int main(int argc, char** argv)
 
     printf("New termios structure set\n");
 
-    int test = applicationLayer(1,fd,"pinguim.gif");
+    int cmp = llopen(fd, 1);
+    if(cmp == -1)
+      return -1;
+
+    int test = applicationLayer(1,fd,filename);
   	if(test == -1){
-  		printf("applayer FAILED REY MYSTERIO 619. NONCANONICAL.C\n");
+  		printf("applayer  NONCANONICAL.C failed\n");
   	}
 
   /*
@@ -83,6 +87,6 @@ int main(int argc, char** argv)
 
 
     tcsetattr(fd,TCSANOW,&oldtio);
-    close(fd);
+    llclose(fd);
     return 0;
 }

@@ -25,13 +25,14 @@ int main(int argc, char** argv)
 
     //int i, sum = 0, speed = 0;
 
-    if ( (argc < 2) ||
+    if ( (argc < 3) ||
   	     ((strcmp("/dev/ttyS0", argv[1])!=0) &&
   	      (strcmp("/dev/ttyS1", argv[1])!=0) )) {
-      printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1\n");
+      printf("Usage:\tnserial SerialPort\n\tex: nserial /dev/ttyS1 pinguim.gif\n");
       exit(1);
     }
 
+    char * filename = argv[2];
 
   /*
     Open serial port device for reading and writing and not as controlling tty
@@ -76,17 +77,20 @@ int main(int argc, char** argv)
 
   printf("New termios structure set\n");
 
+  int cmp = llopen(fd, 0);
+  if(cmp == -1)
+    return -1;
 
-	int test = applicationLayer(0,fd,"pinguim.gif");
+	int test = applicationLayer(0,fd,filename);
 	if(test == -1){
 		printf("applicationLayer FAILED OMG RKO OUT OF NOWHERE. WRITENONCANONICAL.C\n");
 	}
   sleep(3);
+
   if(tcsetattr(fd,TCSANOW,&oldtio) == -1) {
     perror("tcsetattr");
     exit(-1);
   }
-
-  close(fd);
-  return 0;
+  int ret = llclose(fd);
+  return ret;
 }
