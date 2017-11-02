@@ -194,6 +194,10 @@ int llread(int fd, unsigned char * buffer){
     else return 0;
   }
   else if(test == 2){
+    int cmp = sendRR(fd);
+    if(cmp == -1){
+      return -1;
+    }
     return 0;
   }
   else if(test == 3){
