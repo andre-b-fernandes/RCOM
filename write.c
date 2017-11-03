@@ -9,6 +9,7 @@ void alarmHandlerWrite(int sig){
  printf("Attempt number %d \n", counter);
  counter++;
  unblockReadPortSettings(FD);
+  sleep(1);
 }
 
 int receiveMessageWrite(int fd, unsigned char * buffer){
@@ -52,6 +53,7 @@ int stuffTrame(unsigned char* trame, unsigned char * buffer, int length){
   trame[0] = FLAG;
   trame[1] = A;
   trame[2] = ControlByte;
+  printf("  ControlByte: %x  ", ControlByte);
   trame[3] = trame[1]^trame[2];
   int c = 0;
   int realocSize = 4;

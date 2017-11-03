@@ -176,6 +176,8 @@ int sequenceWriter(int fd, int size, char * filename){
     }
   } while(test == 0);
 
+  sleep(2);
+
   test = send_DISC(fd);
   if(test == -1)
     return -1;
@@ -215,11 +217,12 @@ int sequenceReader(int fd, int newFileDiscriptor){
   fileSize = retfileSize(buffer);
   test = 0;
   int aux = 0;
+  int numPackages = 0;
   do {
     do {
       buffer = (unsigned char *) malloc(FRAME_I_SIZE);
       aux = llread(fd, buffer);//- FLAGS BASICALLY
-      printf(" Bytes read: %d\n", aux);
+      printf(" Bytes read: %d  \n", aux);
       if(aux == -1)
         return -1;
     } while(aux == 0);
@@ -232,11 +235,13 @@ int sequenceReader(int fd, int newFileDiscriptor){
       //printf("Written to file %d bytes!\n", lel);
   //  }
     test+=writefile;
-    //printf("Test: %d\n", test);
+    printf(" Test: %d\n", test);
     free(buffer);
+	numPackages++;
   }
   while(test < fileSize );
 
+  printf("NUMPACKAGES: %d\n", numPackages);
   printf("TOTAL: %d\n", test);
   buffer = (unsigned char *) malloc(FRAME_I_SIZE);
   test = 0;
@@ -247,7 +252,7 @@ int sequenceReader(int fd, int newFileDiscriptor){
       return -1;
   } while(test == 0);
 
-  close(newFileDiscriptor);
+ printf("\n");
 
   test = 1;
   do {
@@ -274,7 +279,7 @@ int sequenceReader(int fd, int newFileDiscriptor){
       return -1;
     test = checkErrors(buffer, C_UA);
   } while(test == 1);
-
+  close(newFileDiscriptor);
   return 0;
 }
 

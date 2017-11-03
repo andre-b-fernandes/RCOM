@@ -44,8 +44,12 @@ int checkHeadErrors(unsigned char* buffer, int bufferLength){
     printf("Adress FIELD HEADER MISSING! %x\n",buffer[1]);
     return 3;
   }
+  if(buffer[2] != 0x00 && buffer[2] != 0x40){
+      printf("  Invalid frame CONTROL BYTE! %x ", buffer[2]);
+      return 3;
+  }
   if(buffer[2] != ControlByte){
-    printf("  Repeated frame! ");
+    printf("  Repeated frame! %x  !=  %x", buffer[2], ControlByte);
     return 2;
   }
   else if(buffer[2] == 0x00 && buffer[2]==ControlByte){
@@ -71,6 +75,9 @@ int checkHeadErrors(unsigned char* buffer, int bufferLength){
     bcc2 ^= buffer[counter];
     counter++;
   }
+
+  printf(" BCC2: %x  ", bcc2);
+
   if(buffer[bufferLength - 2] != bcc2){
     printf("ERROR ON DATA SEGMENT! %x read instead of %x ", buffer[bufferLength - 2], bcc2);
     return 1;
