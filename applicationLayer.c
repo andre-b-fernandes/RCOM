@@ -279,7 +279,7 @@ int sequenceReader(int fd, int newFileDiscriptor){
 }
 
 int applicationLayer(int role, int fd, char * filename){
-
+				defaultPortSettings(fd);
         if(role == 0) //writer
         {
           int size;
