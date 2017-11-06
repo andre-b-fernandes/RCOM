@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 {
     int fd;
     struct termios oldtio,newtio;
-
+    srand (time(NULL)); //seed
 
     if ( (argc < 3) ||
   	     ((strcmp("/dev/ttyS0", argv[1])!=0) &&

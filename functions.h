@@ -7,6 +7,8 @@
 #include <termios.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/time.h>
+#include <time.h>
 #include <fcntl.h>
 
 #define MAX_SIZE_OF_FILESIZE 255
@@ -18,7 +20,7 @@
 #define FILENAME 0x00
 #define FILESIZE 0x01
 
-#define DATA_FRAGMENT_SIZE 1024
+#define DATA_FRAGMENT_SIZE 250
 #define DATA_PACKET_SIZE DATA_FRAGMENT_SIZE + 4
 #define FRAME_I_SIZE 2*DATA_PACKET_SIZE + 6
 

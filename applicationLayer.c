@@ -125,7 +125,6 @@ int retfileSize(unsigned char * buffer){
     unsigned char inc = buffer[c];
     c+=inc;
     c++;
-    sleep(1);
   }
   memcpy(&fileSize,&buffer[c+2],buffer[c+1]);
   printf("FILESIZE: %d\n", fileSize);
@@ -133,7 +132,6 @@ int retfileSize(unsigned char * buffer){
 }
 
 
-//TODO send DISC AND UA
 int sequenceWriter(int fd, int size, char * filename){
   printf("Sequence writer\n");
   int filesenddescriptor = openFile(filename);
@@ -218,6 +216,9 @@ int sequenceReader(int fd, int newFileDiscriptor){
   test = 0;
   int aux = 0;
   int numPackages = 0;
+	struct timeval t1,t2;
+	double elapsedTime;
+	gettimeofday(&t1, NULL);
   do {
     do {
       buffer = (unsigned char *) malloc(FRAME_I_SIZE);
@@ -240,9 +241,11 @@ int sequenceReader(int fd, int newFileDiscriptor){
 	numPackages++;
   }
   while(test < fileSize );
-
   printf("NUMPACKAGES: %d\n", numPackages);
   printf("TOTAL: %d\n", test);
+	gettimeofday(&t2, NULL);
+	elapsedTime = (t2.tv_sec - t1.tv_sec)*1000.0;
+	printf("ELAPSED TIME: %f ms.\n", elapsedTime);
   buffer = (unsigned char *) malloc(FRAME_I_SIZE);
   test = 0;
   printf("Read Last Control Package!\n");
