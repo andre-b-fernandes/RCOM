@@ -243,9 +243,9 @@ int sequenceReader(int fd, int newFileDiscriptor){
   while(test < fileSize );
   printf("NUMPACKAGES: %d\n", numPackages);
   printf("TOTAL: %d\n", test);
-	gettimeofday(&t2, NULL);
-	elapsedTime = (t2.tv_sec - t1.tv_sec)*1000.0;
-	printf("ELAPSED TIME: %f ms.\n", elapsedTime);
+  gettimeofday(&t2, NULL);
+  elapsedTime = (t2.tv_sec - t1.tv_sec)*1000.0;
+  printf("ELAPSED TIME: %f ms.\n", elapsedTime);
   buffer = (unsigned char *) malloc(FRAME_I_SIZE);
   test = 0;
   printf("Read Last Control Package!\n");

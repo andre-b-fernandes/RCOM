@@ -20,7 +20,7 @@
 #define FILENAME 0x00
 #define FILESIZE 0x01
 
-#define DATA_FRAGMENT_SIZE 250
+#define DATA_FRAGMENT_SIZE 1024
 #define DATA_PACKET_SIZE DATA_FRAGMENT_SIZE + 4
 #define FRAME_I_SIZE 2*DATA_PACKET_SIZE + 6
 
@@ -37,6 +37,8 @@
 #define A 0x03
 #define C_SET 0x03
 #define C_UA 0x07
+
+#define BAUDRATE B115200
 
 void alarmHandler(int sig);
 

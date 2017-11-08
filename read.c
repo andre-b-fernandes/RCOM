@@ -36,6 +36,12 @@ int processBuffer(unsigned char * buff, unsigned char * buffer, int buffLength){
 }
 
 int checkHeadErrors(unsigned char* buffer, int bufferLength){
+  int randomNumber = rand()%100;
+  printf("Random Number: %d\n", randomNumber);
+  if(randomNumber < 50){
+      printf("Random fail!\n");
+      return 1;
+  }
   if(buffer[0] != FLAG){
     printf("FIRST FLAG HEADER MISSING! %x \n", buffer[0]);
     return 3;
@@ -102,6 +108,7 @@ int receiveMessageRead(int fd, unsigned char * buff){
   do {
     //printf("Reading next byte from message!\n");
     int test = read(fd,&r,1);
+    //usleep(100);
     if(test == -1){
       printf("Error LLREAD() reading trame!\n");
       return -1;

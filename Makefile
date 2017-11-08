@@ -1,9 +1,9 @@
 all: read write
 
-write: applicationLayer.c open.c read.c write.c writenoncanonical.c close.c
+write: applicationLayer.c open.c read.c write.c writenoncanonical.c close.c functions.h
 			gcc applicationLayer.c open.c write.c read.c writenoncanonical.c close.c -Wall -o write
 
-read: applicationLayer.c open.c read.c write.c noncanonical.c close.c
+read: applicationLayer.c open.c read.c write.c noncanonical.c close.c functions.h
 			gcc applicationLayer.c open.c write.c read.c noncanonical.c close.c -Wall -o read
 
 clean:
