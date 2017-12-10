@@ -43,7 +43,20 @@ int main(int argc, char** argv){
     	/*send a string to the server*/
 	bytes = write(sockfd, buf, strlen(buf));
 	printf("Bytes escritos %d\n", bytes);
+	char * resultStr = (char*) malloc(1024);
+	FILE * fd = fdopen(sockfd, "r");
+  if(fd == NULL)
+  {
+    printf("fdopen() error!");
+    return -1;
+  }
+  do {
+		memset(resultStr, 0, sizeof(resultStr));
+		resultStr = fgets(resultStr, sizeof(resultStr), fd);
+		printf("%s", resultStr);
+	} while (!('1' <= resultStr[0] && resultStr[0] <= '5') || resultStr[3] != ' ');
 
 	close(sockfd);
+	free(resultStr);
 	exit(0);
 }

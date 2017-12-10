@@ -15,6 +15,7 @@ int parseFilename(char * url_param, url * url){
 
 int parsePath(char * url_param, url* url){
   char* path = (char*) malloc(strlen(url_param));
+  path[0] = 0;
   int first = 1;
   while (strchr(url_param, '/')) {
       char aux[MAX_STRING];
@@ -35,7 +36,7 @@ int parsePath(char * url_param, url* url){
 	}
   if(strlen(path)!=0) strcpy(url->path, path);
 
-  else strcpy(url->path, "\0");
+  else url->path[0] = 0;
 
   free(path);
   return 0;

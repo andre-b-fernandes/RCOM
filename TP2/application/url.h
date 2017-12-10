@@ -19,6 +19,7 @@ typedef struct URL {
   url_parameter ip;
   url_parameter path;
   url_parameter filename;
+  int port;
 }url;
 
 int parseURL(char * url_param, url* url);

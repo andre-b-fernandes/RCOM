@@ -9,5 +9,6 @@ int getip(url * url){
   }
 
   strcpy(url->ip, inet_ntoa(*((struct in_addr *)h->h_addr)));
+  url->port = PORT;
   return 0;
 }
