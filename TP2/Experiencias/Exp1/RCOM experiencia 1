@@ -1,0 +1,29 @@
+*****Experiência 1 - Configuração de um IP de rede*****
+
+PC 4:
+ifconfig 172.16.40.254 eth0
+
+PC 1:
+ifconfig 172.16.40.1 eth0
+
+Configuramos a VLAN 40
+inteface fastethernet 0/1 e 0/2
+switchport mode access
+switchport access vlan 40
+
+Como estão na mesma rede, no precisamos de fazer route
+
+PC 4:
+ping 172.16.40.1
+
+PC 1:
+ping 172.16.40.254
+
+Verificamos as tabelas ARP
+arp -a
+Apagamos a entrada ARP no tuxy1
+arp -d 172.16.40.254
+
+
+*****Experiência 5- DNS: configurar 172.16.2.1*****
+
