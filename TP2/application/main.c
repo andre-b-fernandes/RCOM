@@ -13,8 +13,13 @@ int main(int argc , char * argv[]){
     return -1;
 
   ftp ftp;
-  int connectionStatus = connectftp(&ftp,url.ip, url.port);
+  int connectionStatus = connectftp(url.ip, url.port);
   if(connectionStatus == -1)
+    return -1;
+  ftp.control_socket_fd = connectionStatus;
+  char response[1024];
+  int receiveConnectResponse;
+  if((receiveConnectResponse = receiveftp(&ftp, response, sizeof(response))) == -1)
     return -1;
 
   if(strlen(url.password) == 0){
@@ -32,14 +37,21 @@ int main(int argc , char * argv[]){
   if(changeCWDStatus == -1)
       return -1;
 
+  int passiveModeStatus =  passiveMode(&ftp);
+  if(passiveModeStatus == -1)
+    return -1;
 
+  int retrStatus = retrftp(&ftp, url.filename);
+  if(retrStatus == -1)
+    return -1;
 
-   printf("Username: %s\n", url.username);
-   printf("Password: %s\n", url.password);
-   printf("Hostname: %s\n", url.hostname);
-   printf("Path: %s\n", url.path);
-   printf("Filename: %s\n", url.filename);
-   printf("IP: %s\n", url.ip);
+  int downloadStatus  = downloadftp(&ftp, url.filename);
+  if(downloadStatus == -1)
+    return -1;
 
+  int disconnect = disconnectftp(&ftp);
+  if(disconnect == -1)
+    return -1;
+    
   return 0;
 }
