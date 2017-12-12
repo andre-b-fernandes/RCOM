@@ -23,3 +23,4 @@ int connectftp(ftp * ftp, const char * ip, int port);
 int loginftp(ftp * ftp, const char * username, const char * password);
 int sendftp(ftp * ftp, const char * str);
 int receiveftp(ftp * ftp, char * resultStr, size_t size);
+int changedirectoryftp(ftp * ftp, const char * path);

@@ -23,6 +23,11 @@ int connectftp(ftp * ftp, const char * ip, int port){
 
   ftp->data_socket_fd = 0;
 
+	char response[1024];
+  int receiveConnectResponse;
+  if((receiveConnectResponse = receiveftp(ftp, response, sizeof(response))) == -1)
+    return -1;
+
   printf("Connected!\n");
   return 0;
 }
@@ -30,28 +35,49 @@ int connectftp(ftp * ftp, const char * ip, int port){
 
 int loginftp(ftp * ftp, const char * username, const char * password){
   int sendLoginUser;
+	char response[1024];
+	sprintf(response, "USER %s\r\n", username);
 
-  if((sendLoginUser = sendftp(ftp, username)) == -1)
+  if((sendLoginUser = sendftp(ftp, response)) == -1)
     return -1;
   else printf("Username was sent\n");
-
-  char response[1024];
+	memset(response, 0 ,sizeof(response));
   int receiveUserResponse;
   if((receiveUserResponse = receiveftp(ftp, response, sizeof(response))) == -1)
     return -1;
 
+	memset(response, 0 ,sizeof(response));
 	int sendLoginPass;
+	sprintf(response, "PASS %s\r\n", password);
 
-	 if((sendLoginPass = sendftp(ftp, password)) == -1)
+	 if((sendLoginPass = sendftp(ftp, response)) == -1)
 	   return -1;
   else printf("Password was sent\n");
 
-  char responsePass[1024];
+	memset(response, 0 ,sizeof(response));
   int receivePassResponse;
-  if((receivePassResponse = receiveftp(ftp, responsePass, sizeof(responsePass))) == -1)
+  if((receivePassResponse = receiveftp(ftp, response, sizeof(response))) == -1)
     return -1;
 
   return 0;
+}
+
+int changedirectoryftp(ftp * ftp, const char * path){
+	int sendPath;
+	char cwd[1024];
+	sprintf(cwd, "CWD %s\r\n", path);
+
+  if((sendPath = sendftp(ftp, cwd)) == -1)
+    return -1;
+
+  else printf("Path was sent\n");
+
+	memset(cwd, 0 ,sizeof(cwd));
+  int receiveCWDResponse;
+  if((receiveCWDResponse = receiveftp(ftp, cwd, sizeof(cwd))) == -1)
+    return -1;
+
+	return 0;
 }
 
 
