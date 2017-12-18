@@ -23,9 +23,9 @@ int main(int argc , char * argv[]){
     return -1;
 
   if(strlen(url.password) == 0){
-      char pass[COLLEGE_EMAIL_LENGTH];
-      printf("Please insert your college email as password: ");
-      fgets(pass, COLLEGE_EMAIL_LENGTH + 1, stdin);
+      char pass[MAX_STRING];
+      printf("Please insert random password: ");
+      fgets(pass, MAX_STRING + 1, stdin);
       strcpy(url.password, pass);
     }
 
@@ -52,6 +52,6 @@ int main(int argc , char * argv[]){
   int disconnect = disconnectftp(&ftp);
   if(disconnect == -1)
     return -1;
-    
+
   return 0;
 }

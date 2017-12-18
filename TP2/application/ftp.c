@@ -85,26 +85,27 @@ int passiveMode(ftp * ftp){
 	if (sendPassive == -1)
 		return -1;
 
-	int ipPart1, ipPart2, ipPart3, ipPart4;
-	int port1, port2;
-	if ((sscanf(pasv, "227 Entering Passive Mode (%d,%d,%d,%d,%d,%d)", &ipPart1,
-			&ipPart2, &ipPart3, &ipPart4, &port1, &port2)) < 0) {
+	int ip1, ip2, ip3, ip4, p1, p2;
+	if ((sscanf(pasv, "227 Entering Passive Mode (%d,%d,%d,%d,%d,%d)", &ip1,
+			&ip2, &ip3, &ip4, &p1, &p2)) < 0) {
 		printf("ERROR parsing information from Passive Mode response.\n");
 		return -1;
 	}
 
 	memset(pasv, 0, sizeof(pasv));
 
-	if ((sprintf(pasv, "%d.%d.%d.%d", ipPart1, ipPart2, ipPart3, ipPart4))
+	if ((sprintf(pasv, "%d.%d.%d.%d", ip1, ip2, ip3, ip4))
 			< 0) {
 		printf("ERROR forming ip address\n");
 		return -1;
 	}
 
-	int portResult = port1 * 256 + port2;
+	int portResult = p1 * 256 + p2;
 
-	//printf("IP: %s\n", pasv);
-	//printf("PORT: %d\n", portResult);
+	// printf("IP: %s\n", pasv);
+	// printf("port1:%d\n", p1);
+	// printf("port2:%d\n", p2);
+	// printf("PORT: %d\n", portResult);
 
 	ftp->data_socket_fd = connectftp(pasv, portResult);
 	if (ftp->data_socket_fd == -1)
@@ -196,7 +197,7 @@ int receiveftp(ftp * ftp, char * resultStr, size_t size){
   do {
 		memset(resultStr, 0, size);
 		resultStr = fgets(resultStr, size, fd);
-		//printf("%s", resultStr);
+		printf("%s", resultStr);
 	} while (!('1' <= resultStr[0] && resultStr[0] <= '5') || resultStr[3] != ' ');
 
   return 0;

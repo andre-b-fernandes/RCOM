@@ -32,7 +32,7 @@ int parsePath(char * url_param, url* url){
       else{
         strcat(path, aux);
       }
-      strcpy(url_param, url_param + counter + 1); //advance path and /
+      memmove(url_param, url_param + counter + 1, strlen(url_param)); //advance path and /
 	}
   if(strlen(path)!=0) strcpy(url->path, path);
 
@@ -50,19 +50,19 @@ int parseHost(char * url_param , url* url){
   }
   hostname[counter+1] = '\0';
   memcpy(url->hostname, hostname, counter + 1);
-  strcpy(url_param, url_param + counter + 1); //advance the hostname
+  memmove(url_param, url_param + counter + 1, strlen(url_param)); //advance the hostname
   return 0;
 }
 
 int parseAnonymous(char * url_param, url * url){
   url->password[0] = 0;
   memcpy(url->username, ANONYMOUS_STRING, ANONYMOUS_SIZE);
-  strcpy(url_param, url_param + 6); //advance ftp://
+  memmove(url_param, url_param + 6, strlen(url_param)); //advance ftp
   return 0;
 }
 
 int parseUser(char * url_param, url * url){
-  strcpy(url_param, url_param + 6); //advance ftp://
+  memmove(url_param, url_param + 6, strlen(url_param)); //advance ftp
   int counterUsername;
   int counterPassword;
   char username[MAX_STRING];
@@ -71,12 +71,13 @@ int parseUser(char * url_param, url * url){
   }
   memcpy(url->username, username, counterUsername);
   char password[MAX_STRING];
-  strcpy(url_param, url_param + counterUsername + 1); //advance the username and :
+  memmove(url_param, url_param + counterUsername + 1, strlen(url_param)); //advance the username and :
   for(counterPassword = 0; url_param[counterPassword] != '@'; counterPassword++){
     password[counterPassword] = url_param[counterPassword];
   }
-  strcpy(url_param, url_param + counterPassword + 1); //advance password and @
-  memcpy(url->password, password, counterPassword);
+  password[counterPassword] = '\0';
+  memcpy(url->password, password, counterPassword + 1);
+  memmove(url_param, url_param + counterPassword + 1, strlen(url_param)); //advance password and @
   return 0;
 }
 

@@ -7,7 +7,6 @@
 #define MAX_STRING 256
 #define ANONYMOUS_SIZE 10
 #define ANONYMOUS_STRING "anonymous\0"
-#define COLLEGE_EMAIL_LENGTH 20
 
 
 
