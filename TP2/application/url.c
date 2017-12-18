@@ -48,7 +48,7 @@ int parseHost(char * url_param , url* url){
   for(counter = 0; url_param[counter] != '/'; counter++){
     hostname[counter] = url_param[counter];
   }
-  hostname[counter+1] = '\0';
+  hostname[counter] = '\0';
   memcpy(url->hostname, hostname, counter + 1);
   memmove(url_param, url_param + counter + 1, strlen(url_param)); //advance the hostname
   return 0;
