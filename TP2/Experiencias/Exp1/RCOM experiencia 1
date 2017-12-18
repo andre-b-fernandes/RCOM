@@ -11,7 +11,7 @@ inteface fastethernet 0/1 e 0/2
 switchport mode access
 switchport access vlan 40
 
-Como estão na mesma rede, no precisamos de fazer route
+Como estão na mesma rede, não precisamos de fazer route
 
 PC 4:
 ping 172.16.40.1

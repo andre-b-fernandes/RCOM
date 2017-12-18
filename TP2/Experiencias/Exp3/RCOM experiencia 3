@@ -1,0 +1,12 @@
+configurar ip do tux1 para 172.16.10.1/24 na eth0(no switch ligar eth0 do 1)
+configurar ip do tux2 para 172.16.11.1/24 na eth0 (no switch ligar eth0 do 2)
+configurar ip do tux4 para 172.16.10.254 na eth0
+configurar ip do tux4 para 172.16.11.253 na eth1
+
+Adicionar as rotas nos tux.
+No pc 4, default gw, duas rotas:
+	Uma eth0 -> para subrede: 172.16.0/24
+	Uma eth1 -> para subrede: 172.16.11.0/24
+
+NO pc1 adiconar rota para pc2, 172.16.11.1 pela gw do pc4, 172.16.10.254 eth0
+NO pc2 adcionar rota para pc1, 172.16.10.1 pela gw do pc4, 172.16.10.253 eth0.

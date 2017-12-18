@@ -1,0 +1,14 @@
+﻿ARP: Protocolo usado para obter um MAC address associada a um dado IP. 
+Neste caso endereço 172.16.10.1 -> eth 0 -> tux1, o mac address seria 00:21:5a:61:2f:df  para 172.16.10.254 -> eth0 -> tux 4 , mac address 00:22:64:a6:a5:12
+
+
+
+The MAC addresses refer to network adapters.
+An IP address refers to a device on a network.
+
+
+Para descobrir o tamanho de um pacote, é contar os bytes desde a flag inicial do header até ao end of frame.
+
+The ping generates ARP,ICMP and LOOP packets.
+
+Interface de loopback , é uma interface de rede virtual que permite que um cliente e um servidor no mesmo host comuniquem entre siusando pilha de protocolos TCP/IP.
